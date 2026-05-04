@@ -3,7 +3,7 @@ from .base_entity import BaseEntity
 
 class Player(BaseEntity):
 
-    def __init__(self, x, y, color=(0, 0, 255), direction=None, health=100, scale_factor=2):
+    def __init__(self, x, y, color=(0, 0, 255), direction=None, health=100, scale_factor=3):
         super().__init__(x, y, color, health)
 
         self.direction = direction  # Track the player's facing direction
@@ -114,6 +114,11 @@ class Player(BaseEntity):
     def update(self):
         self.handle_input()  # Handle player input to update velocity
         super().update()  # Call the base class update to move the player
+
+        # Update blaster position if equipped
+        if self.weapon_equipped and hasattr(self.weapon_equipped, 'update_position'):
+            mouse_pos = pygame.mouse.get_pos()
+            self.weapon_equipped.update_position(self.rect.center, mouse_pos)
 
         # Update animation based on movement state
         self.frame_counter += 1
