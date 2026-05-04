@@ -3,14 +3,13 @@ from pygame.sprite import Sprite
 
 class BaseEntity(Sprite):
 
-    def __init__(self, x, y, width, height, color=(255, 0, 0), health=None):
+    def __init__(self, x, y, color=(255, 0, 0), health=None):
         super().__init__()
         self.health = health
         # visual representation of the entity
-        self.image = pygame.Surface((width, height))
+        self.image = pygame.Surface((50, 50))
         self.image.fill(color)  # Default color (red)
         self.rect = self.image.get_rect()
-        self.rect.topleft = (x, y)
 
         # movement attributes
         self.x = float(x)
@@ -22,7 +21,7 @@ class BaseEntity(Sprite):
         # Update the entity's position based on its velocity
         self.x += self.velocity_x
         self.y += self.velocity_y
-        self.rect.topleft = (int(self.x), int(self.y))
+        self.rect.center = (int(self.x), int(self.y))  # Update the rect position for rendering and collision
 
     def draw(self, surface):
         surface.blit(self.image, self.rect)
