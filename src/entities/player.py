@@ -7,11 +7,15 @@ class Player(BaseEntity):
         super().__init__(x, y, width, height, color)
 
         self.direction = direction  # Track the player's facing direction
-        self.inventory = {
+        self.weapons_inventory = {
             "gun": None,  # Placeholder for the player's gun
             "melee": None  # Placeholder for the player's melee weapon
         }  
+        self.misc_inventory = {
+            "ammo" : 50
+        }
         self.weapon_equipped = None  # Track which weapon is currently equipped
+        self.previous_space_pressed = False
 
     def handle_input(self):
         keys = pygame.key.get_pressed()
@@ -26,9 +30,22 @@ class Player(BaseEntity):
             self.velocity_y = -5
         if keys[pygame.K_s]:
             self.velocity_y = 5
-        if keys[pygame.K_SPACE]:
-            self.use_weapon()
-
+        if self.weapon_equipped and self.weapon_equipped.is_automatic:
+            if keys[pygame.K_SPACE]:
+                self.use_weapon()
+        elif self.weapon_equipped and not self.weapon_equipped.is_automatic:
+            if keys[pygame.K_SPACE] and not self.previous_space_pressed:
+                self.use_weapon()
+            self.previous_space_pressed = keys[pygame.K_SPACE]
+        if keys[pygame.K_r]:
+            if self.weapon_equipped.weapon_type == "gun":
+                self.misc_inventory["ammo"] = self.weapon_equipped.reload(self.misc_inventory["ammo"])
+        if keys[pygame.K_1]:
+            if self.weapons_inventory["gun"] is not None:
+                self.equip_weapon(self.weapons_inventory["gun"])
+        if keys[pygame.K_2]:
+            if self.weapons_inventory["melee"] is not None:
+                self.equip_weapon(self.weapons_inventory["melee"])
         mouse_pos = pygame.mouse.get_pos()
         self.direction = self.calculate_direction(mouse_pos)
 
@@ -47,12 +64,8 @@ class Player(BaseEntity):
         super().update()  # Call the base class update to move the player
 
     def equip_weapon(self, weapon):
-        if weapon.weapon_type in self.inventory:
-            self.inventory[weapon.weapon_type] = weapon
+        if weapon.weapon_type in self.weapons_inventory:
             self.weapon_equipped = weapon
-            print(f"Equipped {weapon}")
-        else:
-            print(f"{weapon} not in inventory")
 
     def use_weapon(self):
         if self.weapon_equipped:

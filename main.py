@@ -14,9 +14,12 @@ clock = pygame.time.Clock()
 
 player = Player(WIDTH // 2, HEIGHT // 2)
 pistol = Pistol()
-player.equip_weapon(pistol)
+player.weapons_inventory["gun"] = pistol  # Add the pistol to the player's inventory
+player.equip_weapon(player.weapons_inventory["gun"])  # Equip the pistol as the current weapon
 
 all_sprites = pygame.sprite.Group(player)
+
+font = pygame.font.Font(None, 24)
 
 running = True
 while running:
@@ -27,12 +30,17 @@ while running:
     screen.fill(BG_COLOR)  # Clear the screen with a green color
 
     # Here you can add your game logic and drawing code
+
+    ammo_text = font.render(f"Ammo: {pistol.ammunition}/{player.misc_inventory['ammo']}", True, (255, 255, 255))
+    curr_equipped = font.render(f"Equipped: {player.weapon_equipped.name if player.weapon_equipped else 'None'}", True, (255, 255, 255))
+
     all_sprites.update()  # Update all sprites
     pistol.update()  # Update the pistol (which updates its projectiles)
 
     all_sprites.draw(screen)  # Draw all sprites
     pistol.projectiles.draw(screen)  # Draw all active projectiles
-
+    screen.blit(ammo_text, (10, 10))  # Display ammo count
+    screen.blit(curr_equipped, (10, 40))  # Display currently equipped weapon
     pygame.display.flip()  # Update the display
     clock.tick(FPS)  # Maintain the frame rate
     
