@@ -6,7 +6,6 @@ from src.weapons.pistol import Pistol
 
 pygame.init()
 
-WIDTH, HEIGHT = 800, 600
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("First Zain Game")
 
@@ -31,16 +30,17 @@ while running:
 
     # Here you can add your game logic and drawing code
 
-    ammo_text = font.render(f"Ammo: {pistol.ammunition}/{player.misc_inventory['ammo']}", True, (255, 255, 255))
-    curr_equipped = font.render(f"Equipped: {player.weapon_equipped.name if player.weapon_equipped else 'None'}", True, (255, 255, 255))
-
+    ammo_text = font.render(f"Ammo: {pistol.ammo}/{player.misc_inventory['ammo']}", True, (255, 255, 255))
+    curr_equipped_text = font.render(f"Equipped: {player.weapon_equipped.name if player.weapon_equipped else 'None'}", True, (255, 255, 255))
+    player_health_text = font.render(f"Health: {player.health}", True, (255, 255, 255))
     all_sprites.update()  # Update all sprites
     pistol.update()  # Update the pistol (which updates its projectiles)
 
     all_sprites.draw(screen)  # Draw all sprites
     pistol.projectiles.draw(screen)  # Draw all active projectiles
     screen.blit(ammo_text, (10, 10))  # Display ammo count
-    screen.blit(curr_equipped, (10, 40))  # Display currently equipped weapon
+    screen.blit(curr_equipped_text, (10, 40))  # Display currently equipped weapon
+    screen.blit(player_health_text, (10, 70))  # Display player health
     pygame.display.flip()  # Update the display
     clock.tick(FPS)  # Maintain the frame rate
     

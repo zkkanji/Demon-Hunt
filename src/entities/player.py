@@ -3,8 +3,8 @@ from .base_entity import BaseEntity
 
 class Player(BaseEntity):
 
-    def __init__(self, x, y, width=50, height=50, color=(0, 0, 255), direction=None):
-        super().__init__(x, y, width, height, color)
+    def __init__(self, x, y, width=50, height=50, color=(0, 0, 255), direction=None, health=100):
+        super().__init__(x, y, width, height, color, health)
 
         self.direction = direction  # Track the player's facing direction
         self.weapons_inventory = {
@@ -12,10 +12,11 @@ class Player(BaseEntity):
             "melee": None  # Placeholder for the player's melee weapon
         }  
         self.misc_inventory = {
-            "ammo" : 50
+            "ammo" : 30
         }
         self.weapon_equipped = None  # Track which weapon is currently equipped
         self.previous_space_pressed = False
+        self.movement_speed = 5
 
     def handle_input(self):
         keys = pygame.key.get_pressed()
@@ -23,13 +24,13 @@ class Player(BaseEntity):
         self.velocity_y = 0
 
         if keys[pygame.K_a]:
-            self.velocity_x = -5
+            self.velocity_x = self.movement_speed * -1
         if keys[pygame.K_d]:
-            self.velocity_x = 5
+            self.velocity_x = self.movement_speed
         if keys[pygame.K_w]:
-            self.velocity_y = -5
+            self.velocity_y = self.movement_speed * -1
         if keys[pygame.K_s]:
-            self.velocity_y = 5
+            self.velocity_y = self.movement_speed
         if self.weapon_equipped and self.weapon_equipped.is_automatic:
             if keys[pygame.K_SPACE]:
                 self.use_weapon()

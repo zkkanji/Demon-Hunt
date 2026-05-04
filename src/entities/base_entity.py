@@ -3,9 +3,9 @@ from pygame.sprite import Sprite
 
 class BaseEntity(Sprite):
 
-    def __init__(self, x, y, width, height, color=(255, 0, 0)):
+    def __init__(self, x, y, width, height, color=(255, 0, 0), health=None):
         super().__init__()
-
+        self.health = health
         # visual representation of the entity
         self.image = pygame.Surface((width, height))
         self.image.fill(color)  # Default color (red)
