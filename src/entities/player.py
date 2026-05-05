@@ -12,7 +12,7 @@ class Player(BaseEntity):
             "melee": None  # Placeholder for the player's melee weapon
         }  
         self.misc_inventory = {
-            "ammo" : 30
+            "ammo" : 1000
         }
         self.weapon_equipped = None  # Track which weapon is currently equipped
         self.previous_space_pressed = False

@@ -1,5 +1,6 @@
 import pygame
 from pygame.sprite import Sprite
+from src.constants import WIDTH, HEIGHT
 
 class BaseEntity(Sprite):
 
@@ -22,6 +23,20 @@ class BaseEntity(Sprite):
         self.x += self.velocity_x
         self.y += self.velocity_y
         self.rect.center = (int(self.x), int(self.y))  # Update the rect position for rendering and collision
+
+        #entity border control
+        if self.rect.left < 0:
+            self.rect.left = 0
+            self.x = self.rect.centerx
+        if self.rect.right > WIDTH:
+            self.rect.right = WIDTH
+            self.x = self.rect.centerx
+        if self.rect.top < 0:
+            self.rect.top = 0
+            self.y = self.rect.centery
+        if self.rect.bottom > HEIGHT:
+            self.rect.bottom = HEIGHT
+            self.y = self.rect.centery
 
     def draw(self, surface):
         surface.blit(self.image, self.rect)

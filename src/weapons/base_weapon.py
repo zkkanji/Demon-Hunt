@@ -4,16 +4,19 @@ from abc import ABC, abstractmethod
 
 class BaseWeapon(ABC):
 
-    def __init__(self, name, damage, weapon_type, is_automatic):
+    def __init__(self, name, damage, is_automatic, weapon_type, orbital_radius):
         self.name = name
         self.damage = damage
-        self.weapon_type = weapon_type
         self.is_automatic = is_automatic
+        self.weapon_type = weapon_type 
         self.image = pygame.Surface((25, 25))
         self.rect = self.image.get_rect()
         
+        # Original unrotated image (subclasses should set this)
+        self.original_image = None
+        
         # Orbiting parameters
-        self.orbit_radius = 80
+        self.orbit_radius = orbital_radius  # Distance from player to weapon
         self.angle = 0
 
     @abstractmethod
@@ -35,3 +38,15 @@ class BaseWeapon(ABC):
         
         # Update weapon position
         self.rect.center = (int(weapon_x), int(weapon_y))
+        
+        # Rotate weapon to point at cursor
+        self.rotate_to_angle()
+
+    def rotate_to_angle(self):
+        # Rotate weapon image to point at cursor angle
+        if self.original_image is None:
+            return  # Skip if weapon doesn't have original_image set
+        
+        rotation_degrees = -math.degrees(self.angle)
+        self.image = pygame.transform.rotate(self.original_image, rotation_degrees)
+        self.rect = self.image.get_rect(center=self.rect.center)

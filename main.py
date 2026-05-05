@@ -3,6 +3,7 @@ import sys
 from src.constants import WIDTH, HEIGHT, FPS, BG_COLOR
 from src.entities.player import Player
 from src.weapons.blaster import Blaster   
+from src.weapons.sword import Sword
 
 pygame.init()
 
@@ -13,7 +14,9 @@ clock = pygame.time.Clock()
 
 player = Player(WIDTH // 2, HEIGHT // 2)
 blaster = Blaster()
+sword = Sword()
 player.weapons_inventory["gun"] = blaster  # Add the blaster to the player's inventory
+player.weapons_inventory["melee"] = sword  # Add the sword to the player's inventory
 player.equip_weapon(player.weapons_inventory["gun"])  # Equip the blaster as the current weapon
 
 all_sprites = pygame.sprite.Group(player)
@@ -35,11 +38,12 @@ while running:
     player_health_text = font.render(f"Health: {player.health}", True, (255, 255, 255))
     all_sprites.update()  # Update all sprites
     player.weapons_inventory["gun"].update()  # Update the blaster (which updates its projectiles)
-
+    player.weapons_inventory["melee"].update()  # Update the sword (which updates its attack animation)
     all_sprites.draw(screen)  # Draw all sprites
     player.weapons_inventory["gun"].projectiles.draw(screen)  # Draw all active projectiles
     screen.blit(player.weapon_equipped.image, player.weapon_equipped.rect)  # Draw the blaster
-    screen.blit(ammo_text, (10, 10))  # Display ammo count
+    if player.weapon_equipped.weapon_type is "gun":
+        screen.blit(ammo_text, (10, 10))  # Display ammo count
     screen.blit(curr_equipped_text, (10, 40))  # Display currently equipped weapon
     screen.blit(player_health_text, (10, 70))  # Display player health
     pygame.display.flip()  # Update the display

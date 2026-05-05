@@ -3,8 +3,14 @@ from .base_weapon import BaseWeapon
 
 class GunBase(BaseWeapon):
 
-    def __init__(self, name, damage, weapon_type, is_automatic, ammo_limit):
-        super().__init__(name, damage, weapon_type, is_automatic)
+    def __init__(self, name, 
+                damage,
+                is_automatic,
+                ammo_limit,
+                orbit_radius,
+                weapon_type = "gun"):
+        
+        super().__init__(name, damage, is_automatic, weapon_type, orbit_radius)
 
         self.ammo_limit = ammo_limit
         self.ammo = ammo_limit  # Start with a full magazine
