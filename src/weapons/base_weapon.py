@@ -29,6 +29,11 @@ class BaseWeapon(ABC):
         player_x, player_y = player_pos
         mouse_x, mouse_y = mouse_pos
         
+        # Fallback: if mouse hasn't moved yet (at 0,0), position weapon to the right
+        if mouse_x == 0 and mouse_y == 0:
+            mouse_x = player_x + 100  # Default to right of player
+            mouse_y = player_y
+        
         # Calculate angle to cursor
         self.angle = math.atan2(mouse_y - player_y, mouse_x - player_x)
         
@@ -36,7 +41,7 @@ class BaseWeapon(ABC):
         weapon_x = player_x + self.orbit_radius * math.cos(self.angle)
         weapon_y = player_y + self.orbit_radius * math.sin(self.angle)
         
-        # Update weapon position
+        # Update weapon position - centered at the calculated orbit position
         self.rect.center = (int(weapon_x), int(weapon_y))
         
         # Rotate weapon to point at cursor

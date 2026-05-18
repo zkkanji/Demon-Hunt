@@ -1,63 +1,59 @@
 import pygame
-from .melee_base import MeleeBase
 import math
+from .melee_base import MeleeBase
+from src.entities.sword_sweep import SwordSweep
+from src.constants import FPS
 
 class Sword(MeleeBase):
     
     def __init__(self):
-        super().__init__(name = "Sword", damage = 20, is_automatic = False, melee_range = 50, orbit_radius = 55, attack_cooldown = 400)
+        super().__init__(name = "Sword", damage = 20, is_automatic = False, melee_range = 100, orbit_radius = 55, attack_cooldown = 300)
 
-        # Sword Sprite code
-        sword_scale_factor = 2
-        self.original_image = pygame.image.load("assets/weapons/sword.png") # Load the sword sprite (original, unrotated)
-        self.original_image = pygame.transform.scale(self.original_image, (int(self.original_image.get_width() * sword_scale_factor), int(self.original_image.get_height() * sword_scale_factor)))
-        self.image = self.original_image.copy()  # Current image (will be rotated)
-        self.rect = self.image.get_rect()  # Get the rect for positioning and collision
-
-        #Sword Attack Animation Frames
-        self.sword_attack_frames = [
-            pygame.transform.scale(pygame.image.load(f"assets/weapons/sword_attack/sword-attack{i}.png"), (int(pygame.image.load(f"assets/weapons/sword_attack/sword-attack{i}.png").get_width() * sword_scale_factor), int(pygame.image.load(f"assets/weapons/sword_attack/sword-attack{i}.png").get_height() * sword_scale_factor))) 
-            for i in range(1, 7)]
-        self.attack_frame_index = 0
+        # Load sword sweep animation frames
+        sweep_scale = 3
+        self.sweep_frames = [
+            pygame.transform.scale(pygame.image.load(f"assets/misc/sword-sweep/sword-sweep{i}.png"), 
+                                 (int(pygame.image.load(f"assets/misc/sword-sweep/sword-sweep{i}.png").get_width() * sweep_scale),
+                                  int(pygame.image.load(f"assets/misc/sword-sweep/sword-sweep{i}.png").get_height() * sweep_scale)))
+            for i in range(1, 13)
+        ]
+        
+        self.sweeps = pygame.sprite.Group()  # Group to manage active sweep projectiles
 
     def attack(self, player_pos, direction):
         if not self.check_attack_ready():
-            return
-        self.is_attacking = True  # Start the attack animation
-        self.attack_frame_index = 0  # Reset animation frame index
-        self.enemies_hit_this_swing = []
-        self.time_from_last_attack = pygame.time.get_ticks()  # Reset the attack cooldown timer
+            return False  # Attack blocked by cooldown
+        
+        # Unpack position and direction
+        px, py = player_pos
+        dx, dy = direction
+        
+        # Calculate angle from direction vector (sprite aims right at 0 radians)
+        angle = math.atan2(dy, dx)
+        
+        # Spawn sweep at edge of attack range, not player center
+        # Use 40 pixel offset in attack direction
+        spawn_offset = 15
+        spawn_x = px + dx * spawn_offset
+        spawn_y = py + dy * spawn_offset
+        
+        # Calculate velocity so sweep travels melee_range distance in attack_cooldown time
+        # velocity = distance / time = melee_range / (attack_cooldown ms converted to frames)
+        velocity = (self.melee_range * 1000) / (self.attack_cooldown * FPS)
+        
+        vx = dx * velocity
+        vy = dy * velocity
+        
+        # Create the sweep projectile with rotation angle at spawn position
+        sweep = SwordSweep(spawn_x, spawn_y, vx, vy, self.damage, self.attack_cooldown, self.sweep_frames, angle=angle)
+        self.sweeps.add(sweep)
+        
+        # Reset attack cooldown timer
+        self.time_from_last_attack = pygame.time.get_ticks()
+        return True  # Attack succeeded
+        
+        # Reset attack cooldown timer
+        self.time_from_last_attack = pygame.time.get_ticks()
 
     def update(self):
-        if self.is_attacking:
-            current_frame = self.sword_attack_frames[self.attack_frame_index]
-            
-            # Rotate the animation frame to point at cursor
-            rotation_degrees = -math.degrees(self.angle)
-            self.image = pygame.transform.rotate(current_frame, rotation_degrees)
-            self.rect = self.image.get_rect(center=self.rect.center)
-            
-            self.attack_frame_index += 1
-            if self.attack_frame_index >= len(self.sword_attack_frames):
-                self.is_attacking = False  # End the attack animation
-                self.attack_frame_index = 0
-
-    def get_sweep_triangle(self):
-        weapon_pos = self.rect.center
-        attack_angle = self.angle
-
-        sweep_distance = self.melee_range
-        tip = weapon_pos
-
-        left_angle = attack_angle + math.radians(30)
-        right_angle = attack_angle - math.radians(30)
-
-        left_point = (
-            weapon_pos[0] + sweep_distance * math.cos(left_angle),
-            weapon_pos[1] + sweep_distance * math.sin(left_angle)
-        )
-        right_point = (
-            weapon_pos[0] + sweep_distance * math.cos(right_angle),
-            weapon_pos[1] + sweep_distance * math.sin(right_angle)
-        )
-        return (tip, left_point, right_point)
+        self.sweeps.update()  # Update all active sweep projectiles
