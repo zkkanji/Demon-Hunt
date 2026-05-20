@@ -6,21 +6,17 @@ from src.entities.projectile import Projectile
 class Blaster(GunBase):
     
     def __init__(self):
-        super().__init__(name = "Blaster", damage = 10, is_automatic = False, ammo_limit=15, orbit_radius = 55)
+        super().__init__(name = "Blaster", damage = 10, is_automatic = False, ammo_limit=15, reload_time=800)
         self.projectile_velocity = 10
+        projectile_scale = 1.5
         self.projectiles = pygame.sprite.Group()  # Group to manage active projectiles
-
-        # Blaster Sprite code
-        blaster_scale_factor = 1.47
-        self.original_image = pygame.image.load("assets/weapons/blaster.png") # Load the blaster sprite (original, unrotated)
-        self.original_image = pygame.transform.scale(self.original_image, (int(self.original_image.get_width() * blaster_scale_factor), int(self.original_image.get_height() * blaster_scale_factor)))
-        self.image = self.original_image.copy()  # Current image (will be rotated)
-        self.rect = self.image.get_rect(center=(0, 0))  # Initialize rect with center at origin, will be updated in update_position
-        self.projectile_image = pygame.image.load("assets/misc/blast-projectile.png")  # Load the projectile sprite
+        projectile_image_raw = pygame.image.load("assets/misc/blast-projectile.png")  # Load the projectile sprite
+        self.projectile_image = pygame.transform.scale(projectile_image_raw, (projectile_image_raw.get_width() * projectile_scale, projectile_image_raw.get_height() * projectile_scale))
     
 
     def attack(self, player_pos, direction):
-
+        if self.is_reloading:
+            return False  # Cannot attack while reloading
         if self.ammo <= 0:
             return False  # No ammo left, cannot fire
         self.ammo -= 1  # Decrease ammunition by 1 each time the gun is fired

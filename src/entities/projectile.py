@@ -5,7 +5,7 @@ from src.utils.sprite_utils import get_sprite_bounds
 class Projectile(BaseEntity):
 
     def __init__(self, x, y, velocity_x, velocity_y, damage, color=(255, 255, 0), sprite_image=None):
-        super().__init__(x, y, color, health=None)
+        super().__init__(x, y, color, max_health=None)
 
         self.velocity_x = velocity_x
         self.velocity_y = velocity_y

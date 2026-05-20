@@ -4,8 +4,9 @@ from src.constants import WIDTH, HEIGHT, FPS, BG_COLOR
 from src.entities.player import Player
 from src.weapons.blaster import Blaster   
 from src.weapons.sword import Sword
-from src.entities.enemy1 import Enemy1
+from src.entities.devil1 import Devil
 from src.game import check_projectile_collision
+from src.utils.UImanager import UImanager
 
 pygame.init()
 
@@ -21,6 +22,8 @@ player.weapons_inventory["gun"] = blaster  # Add the blaster to the player's inv
 player.weapons_inventory["melee"] = sword  # Add the sword to the player's inventory
 player.equip_weapon(player.weapons_inventory["gun"])  # Equip the blaster as the current weapon
 
+ui_manager = UImanager(screen, player, blaster)
+
 # Load reticles for custom cursor
 gun_reticle = pygame.image.load("assets/misc/gun-reticle.png")
 melee_reticle = pygame.image.load("assets/misc/melee-reticle.png")
@@ -30,10 +33,8 @@ pygame.mouse.set_visible(False)
 
 all_sprites = pygame.sprite.Group(player)
 enemies = pygame.sprite.Group()
-enemy1 = Enemy1(400, 300)
-enemies.add(enemy1)
-
-font = pygame.font.Font(None, 24)
+devil = Devil(400, 300)
+enemies.add(devil)
 
 running = True
 while running:
@@ -43,56 +44,52 @@ while running:
 
     screen.fill(BG_COLOR)  # Clear the screen with a green color
 
-    #UI Text
-    ammo_text = font.render(f"Ammo: {blaster.ammo}/{player.misc_inventory['ammo']}", True, (255, 255, 255))
-    curr_equipped_text = font.render(f"Equipped: {player.weapon_equipped.name if player.weapon_equipped else 'None'}", True, (255, 255, 255))
-    player_health_text = font.render(f"Health: {player.health}", True, (255, 255, 255))
-
-    all_sprites.update()  # Update all sprites
+    all_sprites.update()  # Update all sprites (includes player with weapon sprites)
     player.weapons_inventory["gun"].update()  # Update the blaster (which updates its projectiles)
     player.weapons_inventory["melee"].update()  # Update the sword (which updates its attack animation)
     enemies.update()
+    
+    # Check if gun reload should complete (happens every frame)
+    blaster.check_reload_completion(player.misc_inventory["ammo"])
+    
+    ui_manager.update(player, blaster)  # Update UI elements with current player and gun state
+    
+    # Update melee cooldown bar position and value
+    cooldown_remaining = max(0, sword.attack_cooldown - (pygame.time.get_ticks() - sword.time_from_last_attack))
+    sword.cooldown_bar.x = player.rect.centerx - (sword.cooldown_bar.container_width // 2)
+    sword.cooldown_bar.y = player.rect.top - 16
+    sword.cooldown_bar.update(cooldown_remaining)
+
+    # Update gun reload bar position and value
+    reload_remaining = max(0, blaster.reload_time - (pygame.time.get_ticks() - blaster.time_of_last_reload))
+    blaster.reload_bar.x = player.rect.centerx - (blaster.reload_bar.container_width // 2)
+    blaster.reload_bar.y = player.rect.top - 26
+    blaster.reload_bar.update(reload_remaining)
 
     # Collision detection
     check_projectile_collision(blaster.projectiles, enemies)
-    # Sword sweep collision will be handled here once SweepProjectile is created
     check_projectile_collision(sword.sweeps, enemies)
 
     all_sprites.draw(screen)  # Draw all sprites
+    
     enemies.draw(screen)
+    for enemy in enemies:
+        enemy.healthbar.draw(screen)  # Draw health bars for enemies
+    
+    # Draw melee cooldown bar above player (only if cooldown is active)
+    if cooldown_remaining > 0:
+        sword.cooldown_bar.draw(screen)
+    
+    # Draw gun reload bar above player (only if reload is in progress)
+    if reload_remaining > 0:
+        blaster.reload_bar.draw(screen)
+    
     player.weapons_inventory["gun"].projectiles.draw(screen)  # Draw all gun projectiles
     player.weapons_inventory["melee"].sweeps.draw(screen)  # Draw all sword sweep projectiles
     
-    # DEBUG: Draw hitboxes
-    # Draw player collision rect (blue)
-    player_collision_rect = getattr(player, 'collision_rect', player.rect)
-    pygame.draw.rect(screen, (100, 149, 237), player_collision_rect, 2)
-    
-    # Draw bullet projectile hitboxes (yellow) - use collision_rect if available
-    for projectile in blaster.projectiles:
-        collision_rect = getattr(projectile, 'collision_rect', projectile.rect)
-        pygame.draw.rect(screen, (255, 255, 0), collision_rect, 2)
-    
-    # Draw sword sweep hitboxes (green) - use collision_rect if available
-    for sweep in player.weapons_inventory["melee"].sweeps:
-        collision_rect = getattr(sweep, 'collision_rect', sweep.rect)
-        pygame.draw.rect(screen, (0, 255, 0), collision_rect, 2)
-    
-    # Draw enemy hitboxes (red) - use collision_rect if available
-    for enemy in enemies:
-        collision_rect = getattr(enemy, 'collision_rect', enemy.rect)
-        pygame.draw.rect(screen, (255, 0, 0), collision_rect, 2)
-    
-    # Draw gun if equipped (sword is part of player sprite)
-    if player.weapon_equipped.weapon_type == "gun":
-        screen.blit(player.weapon_equipped.image, player.weapon_equipped.rect)
-    
     # Draw UI text
-    if player.weapon_equipped.weapon_type == "gun":
-        screen.blit(ammo_text, (10, 10))  # Display ammo count
-    screen.blit(curr_equipped_text, (10, 40))  # Display currently equipped weapon
-    screen.blit(player_health_text, (10, 70))  # Display player health
-    
+    ui_manager.draw(player)
+
     # Draw custom reticle at mouse position
     mouse_pos = pygame.mouse.get_pos()
     if player.weapon_equipped.weapon_type == "gun":

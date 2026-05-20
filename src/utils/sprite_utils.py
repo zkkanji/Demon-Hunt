@@ -2,7 +2,6 @@
 
 import pygame
 
-
 def get_sprite_bounds(surface):
     """
     Get the bounding rect of non-transparent pixels in a surface.

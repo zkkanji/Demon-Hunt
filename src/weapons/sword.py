@@ -3,14 +3,15 @@ import math
 from .melee_base import MeleeBase
 from src.entities.sword_sweep import SwordSweep
 from src.constants import FPS
+from src.utils.progressbar import ProgressBar
 
 class Sword(MeleeBase):
     
     def __init__(self):
-        super().__init__(name = "Sword", damage = 20, is_automatic = False, melee_range = 100, orbit_radius = 55, attack_cooldown = 300)
+        super().__init__(name = "Sword", damage = 20, is_automatic = False, melee_range = 100, attack_cooldown = 300)
 
         # Load sword sweep animation frames
-        sweep_scale = 3
+        sweep_scale = 4
         self.sweep_frames = [
             pygame.transform.scale(pygame.image.load(f"assets/misc/sword-sweep/sword-sweep{i}.png"), 
                                  (int(pygame.image.load(f"assets/misc/sword-sweep/sword-sweep{i}.png").get_width() * sweep_scale),
@@ -19,6 +20,9 @@ class Sword(MeleeBase):
         ]
         
         self.sweeps = pygame.sprite.Group()  # Group to manage active sweep projectiles
+        
+        # Create cooldown progress bar (small, above player)
+        self.cooldown_bar = ProgressBar(0, 0, self.attack_cooldown, "assets/misc/player-util-bar.png", 1.6, 1.6, fill_color=(192, 192, 192))
 
     def attack(self, player_pos, direction):
         if not self.check_attack_ready():
@@ -51,9 +55,6 @@ class Sword(MeleeBase):
         # Reset attack cooldown timer
         self.time_from_last_attack = pygame.time.get_ticks()
         return True  # Attack succeeded
-        
-        # Reset attack cooldown timer
-        self.time_from_last_attack = pygame.time.get_ticks()
 
     def update(self):
         self.sweeps.update()  # Update all active sweep projectiles

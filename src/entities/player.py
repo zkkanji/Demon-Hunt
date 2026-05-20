@@ -4,8 +4,8 @@ from src.utils.sprite_utils import get_sprite_bounds
 
 class Player(BaseEntity):
 
-    def __init__(self, x, y, color=(0, 0, 255), direction=None, health=100, scale_factor=3):
-        super().__init__(x, y, color, health)
+    def __init__(self, x, y, color=(0, 0, 255), direction=None, max_health=100, scale_factor=3):
+        super().__init__(x, y, color, max_health)
 
         self.direction = direction  # Track the player's facing direction
         self.weapons_inventory = {
@@ -19,35 +19,43 @@ class Player(BaseEntity):
         self.previous_space_pressed = False
         self.movement_speed = 5
 
-        #Player Design/Animation frames
-        # Load and scale walk frames (unarmed)
-        walk_frames_raw = [
-            pygame.image.load("assets/player/movement/player-move1.png"),
-            pygame.image.load("assets/player/movement/player-move2.png"),
-            pygame.image.load("assets/player/movement/player-move3.png"),
-            pygame.image.load("assets/player/movement/player-move4.png"),
-            pygame.image.load("assets/player/movement/player-move5.png"),
+        #Player Design/Animation frames (Blaster or Sword)
+        #Blaster Raw Frames (Left and Right)
+        blaster_idle_right_raw =[
+            pygame.image.load(f"assets/player/blaster/blaster-right/idle/blaster-idle-right{i}.png")
+            for i in range(1, 6)
         ]
-        
-        # Load and scale idle frames (unarmed)
-        idle_frames_raw = [
-            pygame.image.load("assets/player/idle/player-idle1.png"),
-            pygame.image.load("assets/player/idle/player-idle2.png"),
-            pygame.image.load("assets/player/idle/player-idle3.png"),
-            pygame.image.load("assets/player/idle/player-idle4.png"),
-            pygame.image.load("assets/player/idle/player-idle5.png"),
+        blaster_idle_left_raw = [
+            pygame.image.load(f"assets/player/blaster/blaster-left/idle/blaster-idle-left{i}.png")
+            for i in range(1, 6)
         ]
-        
-        # Scale frames based on scale_factor
-        self.walk_frames = [
+        blaster_move_right_raw = [
+            pygame.image.load(f"assets/player/blaster/blaster-right/movement/blaster-move-right{i}.png")
+            for i in range(1, 6)
+        ]
+        blaster_move_left_raw = [
+            pygame.image.load(f"assets/player/blaster/blaster-left/movement/blaster-move-left{i}.png")
+            for i in range(1, 6)
+        ]
+
+        # Scale blaster frames
+        self.blaster_idle_right = [
             pygame.transform.scale(frame, (int(frame.get_width() * scale_factor), int(frame.get_height() * scale_factor)))
-            for frame in walk_frames_raw
+            for frame in blaster_idle_right_raw
         ]
-        self.idle_frames = [
+        self.blaster_idle_left = [
             pygame.transform.scale(frame, (int(frame.get_width() * scale_factor), int(frame.get_height() * scale_factor)))
-            for frame in idle_frames_raw
+            for frame in blaster_idle_left_raw
         ]
-        
+        self.blaster_move_right = [
+            pygame.transform.scale(frame, (int(frame.get_width() * scale_factor), int(frame.get_height() * scale_factor)))
+            for frame in blaster_move_right_raw
+        ]
+        self.blaster_move_left = [
+            pygame.transform.scale(frame, (int(frame.get_width() * scale_factor), int(frame.get_height() * scale_factor)))
+            for frame in blaster_move_left_raw
+        ]
+
         # Load sword frame sets (left and right)
         sword_idle_left_raw = [
             pygame.image.load(f"assets/player/sword/sword-left/idle-left/sword-idle-left{i}.png")
@@ -119,8 +127,9 @@ class Player(BaseEntity):
         self.walk_frame_index = 0
         self.attack_frame_index = 0  # For attack animation
 
-        # Set initial image to first idle frame BEFORE creating rect
-        self.image = self.idle_frames[0]
+        # Set initial image to first sword idle right frame BEFORE creating rect
+        # Player starts with sword equipped visually (even if no weapon assigned)
+        self.image = self.sword_idle_right[0]
         
         # Create collision rect from actual sprite bounds (crop transparent padding)
         bounds = get_sprite_bounds(self.image)
@@ -181,6 +190,22 @@ class Player(BaseEntity):
             return (0, 0)
         return (dx / distance, dy / distance)
 
+    def get_idle_frames(self):
+        """Get idle frame set based on equipped weapon and cursor side."""
+        if self.weapon_equipped and self.weapon_equipped.weapon_type == "gun":
+            return self.blaster_idle_left if self.cursor_side == "left" else self.blaster_idle_right
+        else:
+            # Default to sword (melee)
+            return self.sword_idle_left if self.cursor_side == "left" else self.sword_idle_right
+
+    def get_walk_frames(self):
+        """Get walk frame set based on equipped weapon and cursor side."""
+        if self.weapon_equipped and self.weapon_equipped.weapon_type == "gun":
+            return self.blaster_move_left if self.cursor_side == "left" else self.blaster_move_right
+        else:
+            # Default to sword (melee)
+            return self.sword_walk_left if self.cursor_side == "left" else self.sword_walk_right
+
 
     def update(self):
         self.handle_input()  # Handle player input to update velocity
@@ -189,13 +214,13 @@ class Player(BaseEntity):
         # Keep collision rect synced with player position
         self.collision_rect.center = self.rect.center
 
-        # Update weapon position if equipped (gun only)
-        if self.weapon_equipped and hasattr(self.weapon_equipped, 'update_position'):
+        # Update weapon angle for aiming (gun only) - for hit detection purposes
+        if self.weapon_equipped and self.weapon_equipped.weapon_type == "gun":
             mouse_pos = pygame.mouse.get_pos()
-            # Pass the player's center explicitly
-            self.weapon_equipped.update_position((self.rect.centerx, self.rect.centery), mouse_pos)
+            # Still calculate angle for aiming/projectile direction, but don't rotate sprite
+            self.weapon_equipped.angle = self.calculate_angle_to_mouse(mouse_pos)
 
-        # Update cursor side based on mouse position for sword frames
+        # Update cursor side based on mouse position
         mouse_pos = pygame.mouse.get_pos()
         if mouse_pos[0] > self.rect.centerx:
             self.cursor_side = "right"
@@ -224,17 +249,9 @@ class Player(BaseEntity):
                         self.weapon_equipped.is_attacking = False
                     self.attack_frame_index = 0
         else:
-            # Choose frame set based on equipped weapon
-            if self.weapon_equipped and self.weapon_equipped.weapon_type == "melee":
-                if self.cursor_side == "left":
-                    idle_frames = self.sword_idle_left
-                    walk_frames = self.sword_walk_left
-                else:
-                    idle_frames = self.sword_idle_right
-                    walk_frames = self.sword_walk_right
-            else:
-                idle_frames = self.idle_frames
-                walk_frames = self.walk_frames
+            # Get appropriate frame sets based on equipped weapon
+            idle_frames = self.get_idle_frames()
+            walk_frames = self.get_walk_frames()
 
             # Update animation based on movement state
             self.frame_counter += 1
@@ -251,6 +268,12 @@ class Player(BaseEntity):
                     self.idle_frame_index = (self.idle_frame_index + 1) % len(self.idle_sequence)
                     frame_to_show = self.idle_sequence[self.idle_frame_index]
                     self.image = idle_frames[frame_to_show]
+    
+    def calculate_angle_to_mouse(self, mouse_pos):
+        import math
+        dx = mouse_pos[0] - self.rect.centerx
+        dy = mouse_pos[1] - self.rect.centery
+        return math.atan2(dy, dx)
         
 
     def equip_weapon(self, weapon):
