@@ -8,7 +8,7 @@ class ProgressBar:
         self.max_value = max_value
         self.current_value = max_value
         sprite_bar = pygame.image.load(sprite_path)
-        self.sprite_container = pygame.transform.scale(sprite_bar, (sprite_bar.get_width() * sprite_scalex, sprite_bar.get_height() * sprite_scaley))
+        self.sprite_container = pygame.transform.scale(sprite_bar, (int(sprite_bar.get_width() * sprite_scalex), int(sprite_bar.get_height() * sprite_scaley)))
         self.fill_color = fill_color
         
         # Store full sprite container dimensions for positioning/centering
