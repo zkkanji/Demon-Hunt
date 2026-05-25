@@ -4,8 +4,8 @@ from src.utils.sprite_utils import get_sprite_bounds
 
 class Player(BaseEntity):
 
-    def __init__(self, x, y, color=(0, 0, 255), direction=None, max_health=100, scale_factor=3):
-        super().__init__(x, y, color, max_health)
+    def __init__(self, x, y, direction=None, max_health=100, scale_factor=3):
+        super().__init__(x, y, max_health)
 
         self.direction = direction  # Track the player's facing direction
         self.weapons_inventory = {
@@ -17,7 +17,11 @@ class Player(BaseEntity):
         }
         self.weapon_equipped = None  # Track which weapon is currently equipped
         self.previous_space_pressed = False
-        self.movement_speed = 5
+        self.movement_speed = 3.7
+        self.is_hit = False
+        self.hit_timer = 0
+        self.is_dying = False
+        self.death_timer = 0
 
         #Player Design/Animation frames (Blaster or Sword)
         #Blaster Raw Frames (Left and Right)
@@ -112,9 +116,58 @@ class Player(BaseEntity):
             for frame in sword_attack_right_raw
         ]
 
+        # Death Frames
+        death_frames_raw = [
+            pygame.image.load(f"assets/player/death/player-death{i}.png")
+            for i in range(1, 12)
+        ]
+        self.death_frames = [
+            pygame.transform.scale(frame, (int(frame.get_width() * scale_factor), int(frame.get_height() * scale_factor)))
+            for frame in death_frames_raw
+        ]
+
+        # Right hit frames
+        sword_hit_right_raw = [
+            pygame.image.load(f"assets/player/sword/sword-right/hit-right/hit{i}.png")
+            for i in range (1, 6)
+        ]
+        blaster_hit_right_raw = [
+            pygame.image.load(f"assets/player/blaster/blaster-right/hit/hit{i}.png")
+            for i in range (1, 6)
+        ]
+        self.sword_hit_right = [
+            pygame.transform.scale(frame, (int(frame.get_width() * scale_factor), int(frame.get_height() * scale_factor)))
+            for frame in sword_hit_right_raw
+        ]
+        self.blaster_hit_right = [
+            pygame.transform.scale(frame, (int(frame.get_width() * scale_factor), int(frame.get_height() * scale_factor)))
+            for frame in blaster_hit_right_raw
+        ]
+
+        # Left hit frames
+        sword_hit_left_raw = [
+            pygame.image.load(f"assets/player/sword/sword-left/hit-left/hit{i}.png")
+            for i in range (1, 6)
+        ]
+        blaster_hit_left_raw = [
+            pygame.image.load(f"assets/player/blaster/blaster-left/hit/hit{i}.png")
+            for i in range (1, 6)
+        ]
+        self.sword_hit_left = [
+            pygame.transform.scale(frame, (int(frame.get_width() * scale_factor), int(frame.get_height() * scale_factor)))  
+            for frame in sword_hit_left_raw
+        ]
+        self.blaster_hit_left = [
+            pygame.transform.scale(frame, (int(frame.get_width() * scale_factor), int(frame.get_height() * scale_factor)))
+            for frame in blaster_hit_left_raw
+        ]
+
         self.frame_counter = 0
+        self.hit_frame_counter = 0
+        self.death_frame_counter = 0
         self.frame_speed = 5
         self.attack_frame_speed = 2  # Faster animation for attacks
+        self.death_frame_speed = 2  # Faster death animation
         self.is_moving = False
         self.cursor_side = "right"  # Track which side cursor is on
         self.is_attacking = False  # Track if player is in attack animation
@@ -126,6 +179,12 @@ class Player(BaseEntity):
         self.idle_frame_index = 0
         self.walk_frame_index = 0
         self.attack_frame_index = 0  # For attack animation
+        self.hit_frame_index = 0  # For hit animation
+        self.death_frame_index = 0  # For death animation
+        
+        # Hit animation sequence (5 frames: play forward, then backward for recovery effect)
+        self.hit_sequence = [0, 1, 2, 3, 4, 3, 2, 1, 0]
+        self.hit_animation_speed = 1  # Frame speed for hit animation
 
         # Set initial image to first sword idle right frame BEFORE creating rect
         # Player starts with sword equipped visually (even if no weapon assigned)
@@ -210,9 +269,18 @@ class Player(BaseEntity):
     def update(self):
         self.handle_input()  # Handle player input to update velocity
         super().update()  # Call the base class update to move the player
+
+        if self.weapon_equipped and self.weapon_equipped.weapon_type == "gun" and self.weapon_equipped.ammo == 0 and self.misc_inventory["ammo"] > 0:
+            self.misc_inventory["ammo"] = self.weapon_equipped.reload(self.misc_inventory["ammo"])
         
         # Keep collision rect synced with player position
         self.collision_rect.center = self.rect.center
+
+        # Check if player should die
+        if not self.is_dying and self.current_health <= 0:
+            self.is_dying = True
+            self.death_timer = pygame.time.get_ticks()
+            self.death_frame_index = 0
 
         # Update weapon angle for aiming (gun only) - for hit detection purposes
         if self.weapon_equipped and self.weapon_equipped.weapon_type == "gun":
@@ -227,8 +295,40 @@ class Player(BaseEntity):
         else:
             self.cursor_side = "left"
 
+        # Play death animation (takes highest priority)
+        if self.is_dying:
+            self.death_frame_counter += 1
+            if self.death_frame_counter >= self.death_frame_speed:
+                self.death_frame_counter = 0
+                if self.death_frame_index < len(self.death_frames):
+                    self.image = self.death_frames[self.death_frame_index]
+                    self.death_frame_index += 1
+                else:
+                    # Death animation finished, kill the sprite
+                    self.kill()
+        # Play hit animation when taking damage (takes priority over other animations)
+        elif self.is_hit:
+            # Select hit frames based on equipped weapon and cursor side
+            if self.weapon_equipped and self.weapon_equipped.weapon_type == "gun":
+                hit_frames = self.blaster_hit_left if self.cursor_side == "left" else self.blaster_hit_right
+            else:
+                # Default to sword (melee)
+                hit_frames = self.sword_hit_left if self.cursor_side == "left" else self.sword_hit_right
+            
+            # Update hit animation frame with separate counter
+            self.hit_frame_counter += 1
+            if self.hit_frame_counter >= self.hit_animation_speed:
+                self.hit_frame_counter = 0
+                # Play animation once, then end hit state
+                if self.hit_frame_index < len(self.hit_sequence):
+                    frame_to_show = self.hit_sequence[self.hit_frame_index]
+                    self.image = hit_frames[frame_to_show]
+                    self.hit_frame_index += 1
+                else:
+                    self.is_hit = False
+                    self.hit_frame_index = 0
         # Handle attack animation
-        if self.is_attacking and self.weapon_equipped and self.weapon_equipped.weapon_type == "melee":
+        elif self.is_attacking and self.weapon_equipped and self.weapon_equipped.weapon_type == "melee":
             # Show attack animation
             if self.cursor_side == "left":
                 attack_frames = self.sword_attack_left
@@ -296,3 +396,12 @@ class Player(BaseEntity):
                 self.attack_frame_index = 0
         else:
             print("No weapon equipped")
+
+    def take_damage(self, damage_amount):
+        """Apply damage to the player and trigger hit animation."""
+        self.current_health -= damage_amount
+        if self.current_health < 0:
+            self.current_health = 0
+        self.is_hit = True
+        self.hit_timer = pygame.time.get_ticks()
+        self.hit_frame_index = 0  # Reset hit animation to start from first frame

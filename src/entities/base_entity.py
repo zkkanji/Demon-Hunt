@@ -4,13 +4,12 @@ from src.constants import WIDTH, HEIGHT
 
 class BaseEntity(Sprite):
 
-    def __init__(self, x, y, color=(255, 0, 0), max_health=None):
+    def __init__(self, x, y, max_health=None):
         super().__init__()
         self.max_health = max_health
         self.current_health = max_health
         # visual representation of the entity
         self.image = pygame.Surface((50, 50))
-        self.image.fill(color)  # Default color (red)
         self.rect = self.image.get_rect()
 
         # movement attributes

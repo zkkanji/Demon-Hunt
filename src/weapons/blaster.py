@@ -28,7 +28,7 @@ class Blaster(GunBase):
         vx = dx * self.projectile_velocity
         vy = dy * self.projectile_velocity
 
-        projectile = Projectile(px, py, vx, vy, self.damage, sprite_image = self.projectile_image)
+        projectile = Projectile(px+(2*vx), py+(2*vy), vx, vy, self.damage, sprite_image = self.projectile_image)
         self.projectiles.add(projectile)
         return True  # Attack succeeded
 

@@ -16,11 +16,12 @@ class UImanager:
         self.healthbar = ProgressBar(healthbar_coords[0], 
                                     healthbar_coords[1], 
                                     player.current_health, 
-                                    f"assets/misc/playerhealthbar.png", healthbar_xscale, 
+                                    f"assets/misc/playerhealthbar.png", 
+                                    healthbar_xscale, 
                                     healthbar_yscale, 
                                     xmargin=11,
                                     ymargin=6.5,
-                                    fill_color=(0, 255, 0)
+                                    fill_color=(74, 211, 90)
                                     )
         
         # Ammo UI

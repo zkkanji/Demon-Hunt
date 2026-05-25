@@ -4,8 +4,8 @@ from src.utils.sprite_utils import get_sprite_bounds
 
 class Projectile(BaseEntity):
 
-    def __init__(self, x, y, velocity_x, velocity_y, damage, color=(255, 255, 0), sprite_image=None):
-        super().__init__(x, y, color, max_health=None)
+    def __init__(self, x, y, velocity_x, velocity_y, damage, sprite_image=None):
+        super().__init__(x, y, max_health=None)
 
         self.velocity_x = velocity_x
         self.velocity_y = velocity_y
@@ -15,7 +15,6 @@ class Projectile(BaseEntity):
             self.image = sprite_image
         else:
             self.image = pygame.Surface((10, 10))
-            self.image.fill(color)
         
         # Create collision rect from actual sprite bounds (crop transparent padding)
         bounds = get_sprite_bounds(self.image)

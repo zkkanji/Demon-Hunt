@@ -5,7 +5,7 @@ from src.entities.player import Player
 from src.weapons.blaster import Blaster   
 from src.weapons.sword import Sword
 from src.entities.devil1 import Devil
-from src.game import check_projectile_collision
+from src.game import check_projectile_collision, check_player_enemy_collision
 from src.utils.UImanager import UImanager
 
 pygame.init()
@@ -33,7 +33,7 @@ pygame.mouse.set_visible(False)
 
 all_sprites = pygame.sprite.Group(player)
 enemies = pygame.sprite.Group()
-devil = Devil(400, 300)
+devil = Devil(200, 200)
 enemies.add(devil)
 
 running = True
@@ -47,7 +47,7 @@ while running:
     all_sprites.update()  # Update all sprites (includes player with weapon sprites)
     player.weapons_inventory["gun"].update()  # Update the blaster (which updates its projectiles)
     player.weapons_inventory["melee"].update()  # Update the sword (which updates its attack animation)
-    enemies.update()
+    enemies.update(player)  # Always update enemies (they check internally if player is alive)
     
     # Check if gun reload should complete (happens every frame)
     blaster.check_reload_completion(player.misc_inventory["ammo"])
@@ -69,6 +69,18 @@ while running:
     # Collision detection
     check_projectile_collision(blaster.projectiles, enemies)
     check_projectile_collision(sword.sweeps, enemies)
+    check_player_enemy_collision(player, enemies)
+    
+    # Check enemy sweeps collision with player
+    for enemy in enemies:
+        for sweep in enemy.melee_sweeps:
+            enemy_sweep_collision_rect = getattr(sweep, 'collision_rect', sweep.rect)
+            player_collision_rect = getattr(player, 'collision_rect', player.rect)
+            
+            if enemy_sweep_collision_rect.colliderect(player_collision_rect):
+                if not player.is_hit:
+                    player.take_damage(enemy.attack_damage)
+                sweep.kill()  # Remove sweep after hitting player
 
     all_sprites.draw(screen)  # Draw all sprites
     
@@ -86,6 +98,10 @@ while running:
     
     player.weapons_inventory["gun"].projectiles.draw(screen)  # Draw all gun projectiles
     player.weapons_inventory["melee"].sweeps.draw(screen)  # Draw all sword sweep projectiles
+    
+    # Draw all enemy sweeps
+    for enemy in enemies:
+        enemy.melee_sweeps.draw(screen)
     
     # Draw UI text
     ui_manager.draw(player)
