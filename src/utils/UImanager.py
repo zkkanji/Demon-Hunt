@@ -1,13 +1,16 @@
 import pygame
 from src.entities import player
 from src.utils.progressbar import ProgressBar
-import src.game
+import src.game as game
 from src.constants import WIDTH, HEIGHT
 
 class UImanager:
     def __init__(self, screen, player, gun):
         self.screen = screen
-        self.font = pygame.font.Font(f"assets/fonts/smallest-pixel-7/smallest_pixel-7.ttf", 24)
+        self.UI_color = (200, 200, 200)
+        self.font_letters = pygame.font.Font(f"assets/fonts/minecraftia/Minecraftia.ttf", 18)
+        self.font_numbers = pygame.font.Font(f"assets/fonts/smallest-pixel-7/smallest_pixel-7.ttf", 24)
+        self.font_numbers_large = pygame.font.Font(f"assets/fonts/smallest-pixel-7/smallest_pixel-7.ttf", 48)
 
         # Health Bar UI
         healthbar_coords = (10, 0)
@@ -24,26 +27,82 @@ class UImanager:
                                     fill_color=(74, 211, 90)
                                     )
         
+        # Pause UI
+        self.pause_coords = (WIDTH - 80, HEIGHT - 90)
+        self.pause_image_raw = pygame.image.load(f"assets/misc/pause.png")
+        pause_logo_scale = 2.5
+        self.pause_image = pygame.transform.scale(self.pause_image_raw, (self.pause_image_raw.get_width() * pause_logo_scale, self.pause_image_raw.get_height() * pause_logo_scale))
+        
         # Ammo UI
         self.ammo_logo_coords = (10, 60)
         self.ammo_text_coords = (56, 73)
         ammo_logo_scale = 1.5
         ammo_logo_raw = pygame.image.load(f"assets/misc/ammologo.png")
         self.ammo_logo = pygame.transform.scale(ammo_logo_raw, (ammo_logo_raw.get_width() * ammo_logo_scale, ammo_logo_raw.get_height() * ammo_logo_scale))
-        self.ammo_text = self.font.render(f"{gun.ammo}/{player.misc_inventory['ammo']}", True, (0, 0, 0))
+        self.ammo_text = self.font_numbers.render(f"{gun.ammo}/{player.misc_inventory['ammo']}", True, self.UI_color)
 
         # Game Score UI
-        self.score_coords = (WIDTH -130, 30)
-        self.score_text = self.font.render(f"Score: {src.game.game_score}", True, (0, 0, 0))
+        self.score_text_coords = (WIDTH -150, 23)
+        self.score_value_coords = (WIDTH -70, 25)
+        self.score_text = self.font_letters.render(f"score: ", True, self.UI_color)
+        self.score_value = self.font_numbers.render(f"{game.game_score}", True, self.UI_color)
+
+        # Current Wave UI
+        self.wave_text_coords = (WIDTH - 150, 50)
+        self.wave_value_coords = (WIDTH - 75, 52)
+        self.wave_text = self.font_letters.render(f"wave: ", True, self.UI_color)
+        self.wave_value = self.font_numbers.render(f"{game.wave_number}", True, self.UI_color)
+
+        # Enemies Left in Wave UI
+        self.enemies_text_coords = (WIDTH - 150, 80)
+        self.enemies_value_coords = (WIDTH - 50, 82)
+        self.enemies_text = self.font_letters.render(f"enemies: ", True, self.UI_color)
+        self.enemies_value = self.font_numbers.render(f"{game.enemies_left_in_wave}", True, self.UI_color)
+
+        # Wave Interval Timer UI
+        self.wave_interval_coords = (WIDTH // 2, HEIGHT // 2 - 20)
+        self.wave_interval_value = self.font_numbers_large.render(f"{game.wave_interval_timer // 1000}", True, self.UI_color)
 
     def update(self, player, gun):
         self.healthbar.update(player.current_health)
-        self.ammo_text = self.font.render(f"{gun.ammo}/{player.misc_inventory['ammo']}", True, (0, 0, 0))
-        self.score_text = self.font.render(f"Score: {src.game.game_score}", True, (0, 0, 0))
+        self.ammo_text = self.font_numbers.render(f"{gun.ammo}/{player.misc_inventory['ammo']}", True, self.UI_color)
+        self.score_value = self.font_numbers.render(f"{game.game_score}", True, self.UI_color)
+        self.wave_value = self.font_numbers.render(f"{game.wave_number}", True, self.UI_color)
+        self.enemies_value = self.font_numbers.render(f"{game.enemies_left_in_wave}", True, self.UI_color)
+        self.wave_interval_value = self.font_numbers_large.render(f"{game.wave_interval_timer // 1000}", True, self.UI_color)
 
     def draw(self, player):
-        self.healthbar.draw(self.screen)
-        if player.weapon_equipped.weapon_type == "gun":
-            self.screen.blit(self.ammo_logo, self.ammo_logo_coords)
-            self.screen.blit(self.ammo_text, self.ammo_text_coords)
-        self.screen.blit(self.score_text, self.score_coords)
+        if game.pause_state:
+            self.screen.blit(self.pause_image, self.pause_coords)
+        elif game.wave_interval_timer >= 1000:
+            self.screen.blit(self.wave_interval_value, self.wave_interval_coords)
+            self.healthbar.draw(self.screen)
+            if player.weapon_equipped.weapon_type == "gun":
+                self.screen.blit(self.ammo_logo, self.ammo_logo_coords)
+                self.screen.blit(self.ammo_text, self.ammo_text_coords)
+            self.screen.blit(self.score_text, self.score_text_coords)
+            self.screen.blit(self.score_value, self.score_value_coords)
+            self.screen.blit(self.wave_text, self.wave_text_coords)
+            self.screen.blit(self.wave_value, self.wave_value_coords)
+            self.screen.blit(self.enemies_text, self.enemies_text_coords)
+            self.screen.blit(self.enemies_value, self.enemies_value_coords)
+            self.screen.blit(self.wave_text, self.wave_text_coords)
+            self.screen.blit(self.wave_value, self.wave_value_coords)
+            self.screen.blit(self.enemies_text, self.enemies_text_coords)
+            self.screen.blit(self.enemies_value, self.enemies_value_coords)
+        else:
+            self.healthbar.draw(self.screen)
+            if player.weapon_equipped.weapon_type == "gun":
+                self.screen.blit(self.ammo_logo, self.ammo_logo_coords)
+                self.screen.blit(self.ammo_text, self.ammo_text_coords)
+            self.screen.blit(self.score_text, self.score_text_coords)
+            self.screen.blit(self.score_value, self.score_value_coords)
+            self.screen.blit(self.wave_text, self.wave_text_coords)
+            self.screen.blit(self.wave_value, self.wave_value_coords)
+            self.screen.blit(self.enemies_text, self.enemies_text_coords)
+            self.screen.blit(self.enemies_value, self.enemies_value_coords)
+            self.screen.blit(self.wave_text, self.wave_text_coords)
+            self.screen.blit(self.wave_value, self.wave_value_coords)
+            self.screen.blit(self.enemies_text, self.enemies_text_coords)
+            self.screen.blit(self.enemies_value, self.enemies_value_coords)
+        

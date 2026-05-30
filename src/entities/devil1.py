@@ -1,5 +1,7 @@
 import pygame
 import math
+import src.game as game
+import random
 from .enemy_base import Enemy
 from src.utils.progressbar import ProgressBar
 from .sword_sweep import SwordSweep
@@ -9,9 +11,9 @@ from src.constants import FPS
 class Devil(Enemy):
     
     def __init__(self, x, y):
-        super().__init__(x, y, attack_duration=400, max_health=50, attack_damage=7, knockback_damage=4, movement_speed=1.5, scale_factor=2.5, attack_cooldown=900)
+        super().__init__(x, y, attack_duration=400, max_health=30, attack_damage=7, knockback_damage=4, movement_speed=1.5, scale_factor=2.5, attack_cooldown=900, enemy_type="devil")
 
-        self.attack_radius = 175
+        self.attack_radius = 155
         self.melee_sweeps = pygame.sprite.Group()  # Group to manage active melee sweeps
         #idle frames
         left_idle_raw_frames = [
@@ -180,6 +182,15 @@ class Devil(Enemy):
             self.attack_timer = current_time
             self.time_from_last_attack = current_time  # Reset cooldown timer
 
+    def wave_update(self):
+        if game.wave_number > self.last_wave_processed and game.wave_number > 1:
+            super().wave_update()  # Call parent to apply base upgrades (health, damage, or knockback)
+            # Additional upgrade: 33% chance to increase attack radius (unique to Devil melee style)
+            attack_radius_increment = 10
+            index = random.randint(0, 2)
+            if index == 0:
+                self.attack_radius += attack_radius_increment
+
     def update(self, player):
         # Check if knockback should end
         if self.is_knockback:
@@ -255,6 +266,7 @@ class Devil(Enemy):
                     self.death_frame_index += 1
                 else:
                     self.kill()  
+                    self.die()
             elif self.is_hit:
                 # Play hit animation (back and forth)
                 self.hit_frame_index = (self.hit_frame_index + 1) % len(self.hit_sequence)

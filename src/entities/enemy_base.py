@@ -1,10 +1,13 @@
 import pygame
 from .base_entity import BaseEntity
 from abc import ABC, abstractmethod
+import src.game as game
+import random
+from src.game import decrement_wave_enemies
 
 class Enemy(BaseEntity, ABC):
 
-    def __init__(self, x, y, attack_duration, max_health, attack_damage, knockback_damage, movement_speed, scale_factor=2.5, attack_cooldown=400):
+    def __init__(self, x, y, attack_duration, max_health, attack_damage, knockback_damage, movement_speed, scale_factor=2.5, attack_cooldown=400, enemy_type=None):
         super().__init__(x, y, max_health)
         self.movement_speed = movement_speed
         self.direction = (0, 0)  # Default direction (not moving)
@@ -25,7 +28,13 @@ class Enemy(BaseEntity, ABC):
         self.knockback_timer = 0
         self.time_from_last_attack = 0
         self.attack_cooldown = attack_cooldown  # milliseconds
-        
+        self.last_wave_processed = 0
+        self.enemy_type = enemy_type
+        #shadow image code
+        shadow_image_raw = pygame.image.load("assets/misc/entity-shadow.png").convert_alpha()
+        self.shadow = pygame.transform.scale(shadow_image_raw, (int(shadow_image_raw.get_width() * (2)), int(shadow_image_raw.get_height() * (1.5))))
+        self.shadow.set_alpha(100)  # Make shadow semi-transparent
+
     @abstractmethod
     def primary_attack(self, player):
         pass
@@ -55,4 +64,29 @@ class Enemy(BaseEntity, ABC):
         self.velocity_x = self.direction[0] * self.movement_speed
         self.velocity_y = self.direction[1] * self.movement_speed
         self.is_moving = True if (self.velocity_x != 0 or self.velocity_y != 0) else False
-        
+
+    def wave_update(self):
+        if game.wave_number > self.last_wave_processed and game.wave_number > 1:
+            self.last_wave_processed = game.wave_number
+            health_increment = 5
+            attack_increment = 1
+            knockback_increment = 1
+            index = random.randint(0, 2)
+            if game.wave_number % 10 == 0:
+                health_increment += 5
+                attack_increment += 1
+                knockback_increment += 1
+            if index == 0:  
+                self.max_health += health_increment
+                self.current_health = self.max_health  
+            elif index == 1:
+                self.attack_damage += attack_increment
+            elif index == 2:
+                self.knockback_damage += knockback_increment
+
+    def die(self):
+        decrement_wave_enemies()  # Decrement the count of enemies left in the wave when this enemy dies
+
+    def update(self):
+        super().update()  # Update position based on velocity and handle border control
+        self.wave_update()  # Check for wave events and update stats if needed

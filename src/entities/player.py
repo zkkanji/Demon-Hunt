@@ -17,7 +17,7 @@ class Player(BaseEntity):
         }
         self.weapon_equipped = None  # Track which weapon is currently equipped
         self.previous_space_pressed = False
-        self.movement_speed = 3.7
+        self.movement_speed = 3.7 #3.7 is standard
         self.is_hit = False
         self.hit_timer = 0
         self.is_dying = False
@@ -161,6 +161,10 @@ class Player(BaseEntity):
             pygame.transform.scale(frame, (int(frame.get_width() * scale_factor), int(frame.get_height() * scale_factor)))
             for frame in blaster_hit_left_raw
         ]
+
+        shadow_image_raw = pygame.image.load("assets/misc/entity-shadow.png").convert_alpha()
+        self.shadow = pygame.transform.scale(shadow_image_raw, (int(shadow_image_raw.get_width() * (2)), int(shadow_image_raw.get_height() * (1.5))))
+        self.shadow.set_alpha(100)  # Make shadow semi-transparent
 
         self.frame_counter = 0
         self.hit_frame_counter = 0
