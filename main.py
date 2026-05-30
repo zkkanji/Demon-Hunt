@@ -52,7 +52,7 @@ while running:
         pygame.mouse.set_visible(False)
         
         # Draw shadows on the ground BEFORE drawing characters
-        if not player.is_dying:
+        if player.is_alive:
             shadow_rect = player.shadow.get_rect(midbottom=(player.rect.centerx, player.rect.bottom-5))
             screen.blit(player.shadow, shadow_rect)
         

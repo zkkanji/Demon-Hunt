@@ -20,6 +20,7 @@ class Player(BaseEntity):
         self.movement_speed = 3.7 #3.7 is standard
         self.is_hit = False
         self.hit_timer = 0
+        self.is_alive = True
         self.is_dying = False
         self.death_timer = 0
 
@@ -310,6 +311,7 @@ class Player(BaseEntity):
                 else:
                     # Death animation finished, kill the sprite
                     self.kill()
+                    self.is_alive = False
         # Play hit animation when taking damage (takes priority over other animations)
         elif self.is_hit:
             # Select hit frames based on equipped weapon and cursor side
