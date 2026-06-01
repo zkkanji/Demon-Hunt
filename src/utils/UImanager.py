@@ -64,6 +64,7 @@ class UImanager:
         self.wave_interval_value = self.font_numbers_large.render(f"{game.wave_interval_timer // 1000}", True, self.UI_color)
 
     def update(self, player, gun):
+        self.healthbar.max_value = player.max_health
         self.healthbar.update(player.current_health)
         self.ammo_text = self.font_numbers.render(f"{gun.ammo}/{player.misc_inventory['ammo']}", True, self.UI_color)
         self.score_value = self.font_numbers.render(f"{game.game_score}", True, self.UI_color)
@@ -72,25 +73,10 @@ class UImanager:
         self.wave_interval_value = self.font_numbers_large.render(f"{game.wave_interval_timer // 1000}", True, self.UI_color)
 
     def draw(self, player):
-        if game.pause_state:
+        if game.pause_state and not game.upgrade_selection_active:
             self.screen.blit(self.pause_image, self.pause_coords)
-        elif game.wave_interval_timer >= 1000:
-            self.screen.blit(self.wave_interval_value, self.wave_interval_coords)
-            self.healthbar.draw(self.screen)
-            if player.weapon_equipped.weapon_type == "gun":
-                self.screen.blit(self.ammo_logo, self.ammo_logo_coords)
-                self.screen.blit(self.ammo_text, self.ammo_text_coords)
-            self.screen.blit(self.score_text, self.score_text_coords)
-            self.screen.blit(self.score_value, self.score_value_coords)
-            self.screen.blit(self.wave_text, self.wave_text_coords)
-            self.screen.blit(self.wave_value, self.wave_value_coords)
-            self.screen.blit(self.enemies_text, self.enemies_text_coords)
-            self.screen.blit(self.enemies_value, self.enemies_value_coords)
-            self.screen.blit(self.wave_text, self.wave_text_coords)
-            self.screen.blit(self.wave_value, self.wave_value_coords)
-            self.screen.blit(self.enemies_text, self.enemies_text_coords)
-            self.screen.blit(self.enemies_value, self.enemies_value_coords)
         else:
+            # Always draw base UI elements
             self.healthbar.draw(self.screen)
             if player.weapon_equipped.weapon_type == "gun":
                 self.screen.blit(self.ammo_logo, self.ammo_logo_coords)
@@ -101,8 +87,9 @@ class UImanager:
             self.screen.blit(self.wave_value, self.wave_value_coords)
             self.screen.blit(self.enemies_text, self.enemies_text_coords)
             self.screen.blit(self.enemies_value, self.enemies_value_coords)
-            self.screen.blit(self.wave_text, self.wave_text_coords)
-            self.screen.blit(self.wave_value, self.wave_value_coords)
-            self.screen.blit(self.enemies_text, self.enemies_text_coords)
-            self.screen.blit(self.enemies_value, self.enemies_value_coords)
+            
+            # Show wave interval timer when interval is active
+            if game.wave_interval_timer > 1000:
+                self.screen.blit(self.wave_interval_value, self.wave_interval_coords)
+        
         

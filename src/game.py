@@ -15,13 +15,9 @@ WAVE_INTERVAL_TIME = 5000  # milliseconds (5 seconds) between waves
 wave_interval_timer = 0
 wave_interval_started = False
 wave_interval_start_time = 0
+upgrade_selection_active = False
 
 def get_enemy_spawn_position():
-    """Calculate and return random spawn position at screen edge.
-    
-    Returns:
-        tuple: (x, y) coordinates for enemy spawn
-    """
     # Randomly choose left or right edge
     if random.choice([True, False]):
         # Left edge
@@ -37,16 +33,6 @@ def get_enemy_spawn_position():
 
 
 def check_projectile_collision(projectiles, enemies):
-    """
-    Check collisions between projectiles and enemies.
-    Damages enemies and removes projectiles on hit.
-    Awards score based on damage (1.5x) and kills (100 points).
-    Uses collision_rect if available (for accurate collision), otherwise uses rect.
-    
-    Args:
-        projectiles: pygame.sprite.Group of projectiles
-        enemies: pygame.sprite.Group of enemies
-    """
     global game_score
     
     for projectile in projectiles:
@@ -77,15 +63,6 @@ def check_projectile_collision(projectiles, enemies):
 
 
 def check_player_enemy_collision(player, enemies):
-    """
-    Check collisions between player and enemies.
-    Player takes damage and enemy is knocked back on collision.
-    Only one collision is processed per frame per enemy to prevent multiple hits.
-    
-    Args:
-        player: The player object
-        enemies: pygame.sprite.Group of enemies
-    """
     # Use collision_rect if available, otherwise use rect
     player_collision_rect = getattr(player, 'collision_rect', player.rect)
     
@@ -155,6 +132,16 @@ def decrement_wave_enemies():
     global enemies_left_in_wave
     if enemies_left_in_wave > 0:
         enemies_left_in_wave -= 1
+
+def triple_card_selector(cards):
+    if len(cards) >= 3:
+        card_triple = []
+        for i in range(3):
+            index = random.randint(0, len(cards) - 1)
+            card_triple.append(cards[index])
+            cards.remove(cards[index])  # Remove selected card to avoid duplicates in triple
+        return card_triple
+    return cards   
 
 def pause_game():
     global pause_state

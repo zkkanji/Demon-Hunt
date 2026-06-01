@@ -12,6 +12,8 @@ class Player(BaseEntity):
             "gun": None,  # Placeholder for the player's gun
             "melee": None  # Placeholder for the player's melee weapon
         }  
+        self.gun_inventory = []
+        self.melee_inventory = []
         self.misc_inventory = {
             "ammo" : 1000
         }
@@ -381,12 +383,24 @@ class Player(BaseEntity):
         dy = mouse_pos[1] - self.rect.centery
         return math.atan2(dy, dx)
         
+    def weapon_swap(self, new_weapon):
+        new_weapon_type = getattr(new_weapon, 'weapon_type', None)
+        if new_weapon_type == "gun": 
+            for i in range(len(self.gun_inventory)):
+                if self.gun_inventory[i] == new_weapon:
+                    self.weapons_inventory["gun"] = self.gun_inventory[i]
+        elif new_weapon_type == "melee":
+            for i in range(len(self.melee_inventory)):
+                if self.melee_inventory[i] == new_weapon:
+                    self.weapons_inventory["melee"] = self.melee_inventory[i]
+        else:
+            print("Invalid weapon type for swapping")
 
     def equip_weapon(self, weapon):
         if weapon.weapon_type in self.weapons_inventory:
             self.weapon_equipped = weapon
             # Position the weapon immediately if it has update_position method
-            if hasattr(weapon, 'update_position'):
+            if hasattr(weapon, 'update_position'): # check if this code is necessary
                 mouse_pos = pygame.mouse.get_pos()
                 # Pass the player's center explicitly
                 weapon.update_position((self.rect.centerx, self.rect.centery), mouse_pos)

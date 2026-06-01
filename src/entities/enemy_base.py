@@ -2,7 +2,6 @@ import pygame
 from .base_entity import BaseEntity
 from abc import ABC, abstractmethod
 import src.game as game
-import random
 from src.game import decrement_wave_enemies
 
 class Enemy(BaseEntity, ABC):
@@ -68,21 +67,13 @@ class Enemy(BaseEntity, ABC):
     def wave_update(self):
         if game.wave_number > self.last_wave_processed and game.wave_number > 1:
             self.last_wave_processed = game.wave_number
-            health_increment = 5
-            attack_increment = 1
-            knockback_increment = 1
-            index = random.randint(0, 2)
-            if game.wave_number % 10 == 0:
-                health_increment += 5
-                attack_increment += 1
-                knockback_increment += 1
-            if index == 0:  
-                self.max_health += health_increment
-                self.current_health = self.max_health  
-            elif index == 1:
-                self.attack_damage += attack_increment
-            elif index == 2:
-                self.knockback_damage += knockback_increment
+            health_increment = (game.wave_number-1) * 20
+            attack_increment = (game.wave_number-1) * 5
+            knockback_increment = (game.wave_number-1) * 5 
+            self.max_health += health_increment
+            self.current_health = self.max_health       
+            self.attack_damage += attack_increment
+            self.knockback_damage += knockback_increment
 
     def die(self):
         decrement_wave_enemies()  # Decrement the count of enemies left in the wave when this enemy dies

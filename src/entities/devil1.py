@@ -185,11 +185,9 @@ class Devil(Enemy):
     def wave_update(self):
         if game.wave_number > self.last_wave_processed and game.wave_number > 1:
             super().wave_update()  # Call parent to apply base upgrades (health, damage, or knockback)
-            # Additional upgrade: 33% chance to increase attack radius (unique to Devil melee style)
-            attack_radius_increment = 10
-            index = random.randint(0, 2)
-            if index == 0:
-                self.attack_radius += attack_radius_increment
+            attack_radius_increment = 15
+            self.attack_radius += attack_radius_increment
+            self.healthbar.max_value = self.max_health  # Update healthbar max value with new health
 
     def update(self, player):
         # Check if knockback should end

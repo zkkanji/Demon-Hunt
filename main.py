@@ -1,13 +1,15 @@
 import pygame
 import sys
+import src.game as game
 from src.constants import WIDTH, HEIGHT, FPS, BG_COLOR
 from src.entities.player import Player
 from src.weapons.blaster import Blaster   
 from src.weapons.sword import Sword
 from src.entities.devil1 import Devil
-import src.game as game
 from src.game import check_projectile_collision, check_player_enemy_collision, pause_game, advance_wave, get_enemy_spawn_position, check_enemy_enemy_collision
 from src.utils.UImanager import UImanager
+from src.utils.upgrade_cards import player_upgrade_card, weapon_upgrade_card, weapon_unlock_card
+from src.utils.card_selection import initialize_upgrade_selection, update_and_draw_upgrade_cards, handle_card_click
 
 pygame.init()
 
@@ -19,8 +21,10 @@ clock = pygame.time.Clock()
 player = Player(WIDTH // 2, HEIGHT // 2)
 blaster = Blaster()
 sword = Sword()
-player.weapons_inventory["gun"] = blaster  # Add the blaster to the player's inventory
-player.weapons_inventory["melee"] = sword  # Add the sword to the player's inventory
+player.gun_inventory.append(blaster)  
+player.melee_inventory.append(sword)
+player.weapon_swap(blaster)
+player.weapon_swap(sword) 
 player.equip_weapon(player.weapons_inventory["gun"])  # Equip the blaster as the current weapon
 
 ui_manager = UImanager(screen, player, blaster)
@@ -28,6 +32,7 @@ ui_manager = UImanager(screen, player, blaster)
 # Load reticles for custom cursor
 gun_reticle = pygame.image.load("assets/misc/gun-reticle.png")
 melee_reticle = pygame.image.load("assets/misc/melee-reticle.png")
+pause_snapshot = None
 
 all_sprites = pygame.sprite.Group(player)
 enemies = pygame.sprite.Group()
@@ -40,16 +45,72 @@ enemy_spawn_timer = 0
 enemy_spawn_rate = 120  # Spawn an enemy every 120 frames (2 seconds at 60 FPS)
 enemies_spawned_this_wave = 0  # Track how many enemies have been spawned this wave
 
+# Health buff cards
+health_up_10 = player_upgrade_card("Increase Health by 10", 10, f"assets/upgrade-cards/health-upgrade/health+10", player, "max_health")
+health_up_15 = player_upgrade_card("Increase Health by 15", 15, f"assets/upgrade-cards/health-upgrade/health+15", player, "max_health")
+health_up_20 = player_upgrade_card("Increase Health by 20", 20, f"assets/upgrade-cards/health-upgrade/health+20", player, "max_health")
+health_upgrade_cards = [health_up_10, health_up_15, health_up_20]
+
+# Equipped Gun buff cards
+gun_dmg_up_5 = weapon_upgrade_card("Increase Equipped Gun Damage by 5", 5, f"assets/upgrade-cards/gun-upgrade/gun+5", player.weapons_inventory["gun"], "damage")
+gun_dmg_up_10 = weapon_upgrade_card("Increase Equipped Gun Damage by 10", 10, f"assets/upgrade-cards/gun-upgrade/gun+10", player.weapons_inventory["gun"], "damage")
+gun_dmg_up_15 = weapon_upgrade_card("Increase Equipped Gun Damage by 15", 15, f"assets/upgrade-cards/gun-upgrade/gun+15", player.weapons_inventory["gun"], "damage")
+gun_upgrade_cards = [gun_dmg_up_5, gun_dmg_up_10, gun_dmg_up_15]
+
+# Equipped Melee buff cards
+melee_dmg_up_5 = weapon_upgrade_card("Increase Equipped Melee Damage by 5", 5, f"assets/upgrade-cards/melee-upgrade/melee+5", player.weapons_inventory["melee"], "damage")
+melee_dmg_up_10 = weapon_upgrade_card("Increase Equipped Melee Damage by 10", 10, f"assets/upgrade-cards/melee-upgrade/melee+10", player.weapons_inventory["melee"], "damage")
+melee_dmg_up_15 = weapon_upgrade_card("Increase Equipped Melee Damage by 15", 15, f"assets/upgrade-cards/melee-upgrade/melee+15", player.weapons_inventory["melee"], "damage")
+melee_upgrade_cards = [melee_dmg_up_5, melee_dmg_up_10, melee_dmg_up_15]
+
+# Equipped Gun Magazine Size buff cards
+mag_up_2 = weapon_upgrade_card("Increase Current Gun Magazine Size by 2", 2, f"assets/upgrade-cards/mag-upgrade/mag+2", player.weapons_inventory["gun"], "ammo_limit")
+mag_up_3 = weapon_upgrade_card("Increase Current Gun Magazine Size by 3", 3, f"assets/upgrade-cards/mag-upgrade/mag+3", player.weapons_inventory["gun"], "ammo_limit")
+mag_up_5 = weapon_upgrade_card("Increase Current Gun Magazine Size by 5", 5, f"assets/upgrade-cards/mag-upgrade/mag+5", player.weapons_inventory["gun"], "ammo_limit")
+magazine_upgrade_cards = [mag_up_2, mag_up_3, mag_up_5]
+
+# Equipped Melee Range buff cards
+range_up_5 = weapon_upgrade_card("Increase Current Melee Range by 5", 5, f"assets/upgrade-cards/melee-radius-upgrade/radius+5", player.weapons_inventory["melee"], "melee_range")
+range_up_10 = weapon_upgrade_card("Increase Current Melee Range by 10", 10, f"assets/upgrade-cards/melee-radius-upgrade/radius+10", player.weapons_inventory["melee"], "melee_range")
+melee_range_upgrade_cards = [range_up_5, range_up_10]
+
+# Variable to store selected cards during upgrade selection
+selected_upgrade_cards = None
+
 running = True
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
         elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-            pause_game()
+            # Only allow pause toggle if upgrade cards are not being shown
+            if not game.upgrade_selection_active:
+                pause_game()
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+                # Handle card clicks during upgrade selection
+                if game.upgrade_selection_active and selected_upgrade_cards:
+                    mouse_pos = pygame.mouse.get_pos()
+                    if handle_card_click(selected_upgrade_cards, mouse_pos) and not player.is_dying:
+                        game.wave_interval_started = True 
+                        game.upgrade_selection_active = False
+                        selected_upgrade_cards = None
+                        game.pause_state = False
+                        game.wave_interval_start_time = pygame.time.get_ticks()
+                        
+                        # Reset spawned counter for next wave
+                        enemies_spawned_this_wave = 0
+                    
     if not game.pause_state:        
         screen.fill(BG_COLOR)  # Clear the screen with a green color
         pygame.mouse.set_visible(False)
+        
+        # Update wave interval timer if active
+        if game.wave_interval_started:
+            elapsed = pygame.time.get_ticks() - game.wave_interval_start_time
+            game.wave_interval_timer = max(0, game.WAVE_INTERVAL_TIME - elapsed) + 1000
+            if game.wave_interval_timer <= 1000:
+                game.wave_interval_started = False
+                advance_wave()  # Advance to next wave when interval ends
         
         # Draw shadows on the ground BEFORE drawing characters
         if player.is_alive:
@@ -61,8 +122,8 @@ while running:
                 shadow_rect = enemy.shadow.get_rect(midbottom=(enemy.rect.centerx-2, enemy.rect.bottom-2))
             screen.blit(enemy.shadow, shadow_rect)
         
-        # Wave spawning system - spawn enemies up to the wave limit
-        if enemies_spawned_this_wave < game.max_enemies_current_wave:
+        # Wave spawning system - spawn enemies up to the wave limit (but NOT during interval)
+        if enemies_spawned_this_wave < game.max_enemies_current_wave and not game.wave_interval_started:
             enemy_spawn_timer += 1
             if enemy_spawn_timer >= enemy_spawn_rate and len(enemies) < game.MOST_ENEMIES_ON_SCREEN:
                 x, y = get_enemy_spawn_position()
@@ -73,19 +134,19 @@ while running:
         
         # Check if wave is complete (all enemies spawned and killed)
         if enemies_spawned_this_wave >= game.max_enemies_current_wave and len(enemies) == 0:
-            # Start wave interval timer if not already started
-            if not game.wave_interval_started:
-                game.wave_interval_started = True
-                game.wave_interval_start_time = pygame.time.get_ticks()
-            
-            # Update wave interval timer
-            elapsed = pygame.time.get_ticks() - game.wave_interval_start_time
-            game.wave_interval_timer = max(0, game.WAVE_INTERVAL_TIME - elapsed + 1000) 
-            
-            # Advance to next wave when interval is complete
-            if game.wave_interval_timer <= 0:
-                enemies_spawned_this_wave = 0  # Reset for next wave
-                advance_wave()
+            # Show upgrade card selection immediately (before timer)
+            if not game.upgrade_selection_active:
+                # Initialize upgrade card selection overlay
+                card_lists = [
+                    health_upgrade_cards,
+                    gun_upgrade_cards,
+                    melee_upgrade_cards,
+                    magazine_upgrade_cards,
+                    melee_range_upgrade_cards
+                ]
+                selected_upgrade_cards = initialize_upgrade_selection(card_lists)
+                game.upgrade_selection_active = True
+                game.pause_state = True
 
         all_sprites.update()  # Update all sprites (includes player with weapon sprites)
         player.weapons_inventory["gun"].update()  # Update the blaster (which updates its projectiles)
@@ -149,6 +210,7 @@ while running:
         
         # Draw UI text (includes pause image if paused)
         ui_manager.draw(player)
+        pause_snapshot = screen.copy()  # Capture the current screen for pause overlay
 
         mouse_pos = pygame.mouse.get_pos()
         if player.weapon_equipped.weapon_type == "gun":
@@ -157,12 +219,19 @@ while running:
         elif player.weapon_equipped.weapon_type == "melee":
             reticle_rect = melee_reticle.get_rect(center=mouse_pos)
             screen.blit(melee_reticle, reticle_rect)
-    else:
+    elif game.pause_state:
         # Draw pause screen overlay
         pygame.mouse.set_visible(True)
+        screen.blit(pause_snapshot, (0, 0))  # Show the captured game screen when paused
+        overlay = pygame.Surface((WIDTH, HEIGHT)); overlay.set_alpha(70); overlay.fill((0, 0, 0))
+        screen.blit(overlay, (0, 0)) 
         ui_manager.draw(player)
         
-    
+        # Draw upgrade cards if selection is active
+        if game.upgrade_selection_active and selected_upgrade_cards:
+            mouse_pos = pygame.mouse.get_pos()
+            update_and_draw_upgrade_cards(screen, selected_upgrade_cards, mouse_pos)
+        
 
     if not game.pause_state:
         pygame.display.flip()  # Update the display

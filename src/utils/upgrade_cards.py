@@ -1,0 +1,95 @@
+import pygame
+
+class card:
+    
+    def __init__(self, name, image_folder):
+        self.name = name
+        image_scale = 8
+        image_idle = pygame.image.load(f"{image_folder}/card.png")
+        image_hover = pygame.image.load(f"{image_folder}/card-hover.png")
+        self.images = (pygame.transform.scale(image_idle, (image_idle.get_width() * image_scale, image_idle.get_height() * image_scale)), 
+                       pygame.transform.scale(image_hover, (image_hover.get_width() * image_scale, image_hover.get_height() * image_scale)))
+        animation_frames_raw = [
+            pygame.image.load(f"assets/upgrade-cards/card-animation/f{i}.png")
+            for i in range(1, 9)
+        ]
+        self.animation_frames = [
+            pygame.transform.scale(image, (image.get_width() * image_scale, image.get_height() * image_scale))
+            for image in animation_frames_raw
+        ]
+        self.rect = self.images[0].get_rect()
+        # Create a tighter collision rect to avoid overlapping card detection
+        # Reduce rect size by 15% to account for transparent space around cards
+        self.collision_rect = self.rect.inflate(-self.rect.width * 0.5, -self.rect.height * 0.3)
+        self.animation_index = 0
+        self.animation_tick = 0
+        self.is_hovering = False
+        self.ticks_per_frame = 3
+    
+    def update(self, mouse_pos):
+        # Update collision rect position to match rect
+        self.collision_rect.center = self.rect.center
+        # Check if hovering over the card using collision rect
+        self.is_hovering = self.collision_rect.collidepoint(mouse_pos)
+        
+        # Handle animation playback
+        if self.animation_index < len(self.animation_frames):
+            # Still animating
+            self.animation_tick += 1
+            if self.animation_tick >= self.ticks_per_frame:
+                self.animation_tick = 0
+                self.animation_index += 1
+        
+        # Return appropriate image
+        if self.animation_index < len(self.animation_frames):
+            # Still in animation phase
+            return self.animation_frames[self.animation_index]
+        else:
+            # Animation complete, use idle/hover images
+            image_index = 1 if self.is_hovering else 0
+            return self.images[image_index]
+
+# Player attribute upgrade card class
+class player_upgrade_card(card):
+    def __init__(self, name, upgrade_amount, image_folder, player, attribute_name):
+        super().__init__(name, image_folder)
+        self.upgrade_amount = upgrade_amount
+        self.player = player
+        self.attribute_name = attribute_name
+        self.effecting_attribute_value = getattr(player, attribute_name)
+
+    def apply_upgrade(self):
+        self.effecting_attribute_value = getattr(self.player, self.attribute_name)
+        setattr(self.player, self.attribute_name, self.effecting_attribute_value + self.upgrade_amount)
+        self.effecting_attribute_value = getattr(self.player, self.attribute_name)
+        if self.attribute_name == "max_health":
+            self.player.current_health += self.upgrade_amount  
+
+# Weapon attribute upgrade card class
+class weapon_upgrade_card(card): 
+
+    def __init__(self, name, upgrade_amount, image_folder, weapon, attribute_name):
+        super().__init__(name, image_folder)
+        self.upgrade_amount = upgrade_amount
+        self.weapon = weapon
+        self.attribute_name = attribute_name
+        self.effecting_attribute_value = getattr(weapon, attribute_name, None)
+
+    def apply_upgrade(self):
+        self.effecting_attribute_value = getattr(self.weapon, self.attribute_name)
+        setattr(self.weapon, self.attribute_name, self.effecting_attribute_value + self.upgrade_amount)
+        self.effecting_attribute_value = getattr(self.weapon, self.attribute_name)
+
+# Weapon unlocking card class
+class weapon_unlock_card(card):
+    def __init__(self, name, player, weapon_to_unlock, image_folder):
+        super().__init__(name, image_folder)
+        self.player = player
+        self.weapon_to_unlock = weapon_to_unlock
+    
+    def unlock_weapon(self):
+        if self.weapon_to_unlock not in self.player.gun_inventory and self.weapon_to_unlock not in self.player.melee_inventory:
+            if self.weapon_to_unlock.weapon_type == "gun":
+                self.player.gun_inventory.append(self.weapon_to_unlock)
+            elif self.weapon_to_unlock.weapon_type == "melee":
+                self.player.melee_inventory.append(self.weapon_to_unlock)
