@@ -38,6 +38,8 @@ def update_and_draw_upgrade_cards(screen, selected_cards, mouse_pos):
     for card in selected_cards:
         current_image = card.update(mouse_pos)
         screen.blit(current_image, card.rect)
+        if card.is_hovering:
+            screen.blit(card.desc, card.desc_coords)
 
 
 def handle_card_click(selected_cards, mouse_pos):

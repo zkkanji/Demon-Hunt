@@ -118,6 +118,10 @@ def check_enemy_enemy_collision(enemies):
                     enemy2.rect.center = (int(enemy2.x), int(enemy2.y))
                     enemy2.collision_rect.center = enemy2.rect.center
 
+def check_player_drop_collision(player, drop):
+    player_collision_rect = getattr(player, 'collision_rect', player.rect)
+    return player_collision_rect.colliderect(drop.rect)
+
 def advance_wave():
     global wave_number, enemies_left_in_wave, max_enemies_current_wave, wave_interval_started, wave_interval_start_time
     wave_number += 1

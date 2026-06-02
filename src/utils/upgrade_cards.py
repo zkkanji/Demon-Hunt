@@ -1,9 +1,10 @@
 import pygame
+from src.constants import WIDTH, UI_COLOR
 
 class card:
     
-    def __init__(self, name, image_folder):
-        self.name = name
+    def __init__(self, text, image_folder):
+        self.text = text
         image_scale = 8
         image_idle = pygame.image.load(f"{image_folder}/card.png")
         image_hover = pygame.image.load(f"{image_folder}/card-hover.png")
@@ -19,13 +20,19 @@ class card:
         ]
         self.rect = self.images[0].get_rect()
         # Create a tighter collision rect to avoid overlapping card detection
-        # Reduce rect size by 15% to account for transparent space around cards
         self.collision_rect = self.rect.inflate(-self.rect.width * 0.5, -self.rect.height * 0.3)
         self.animation_index = 0
         self.animation_tick = 0
         self.is_hovering = False
         self.ticks_per_frame = 3
-    
+
+        # Description text setup
+        self.font_letters = pygame.font.Font(f"assets/fonts/minecraftia/Minecraftia.ttf", 24)
+        #self.font_letters.set_bold(True)
+        self.desc = self.font_letters.render(self.text, True, UI_COLOR)
+        self.center_distance = self.desc.get_rect().width // 2
+        self.desc_coords = ((WIDTH // 2) - self.center_distance, self.rect.bottom + 140)
+
     def update(self, mouse_pos):
         # Update collision rect position to match rect
         self.collision_rect.center = self.rect.center
@@ -46,7 +53,10 @@ class card:
             return self.animation_frames[self.animation_index]
         else:
             # Animation complete, use idle/hover images
-            image_index = 1 if self.is_hovering else 0
+            if self.is_hovering:
+                image_index = 1  
+            else:
+                image_index = 0  
             return self.images[image_index]
 
 # Player attribute upgrade card class

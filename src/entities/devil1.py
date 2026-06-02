@@ -5,8 +5,9 @@ import random
 from .enemy_base import Enemy
 from src.utils.progressbar import ProgressBar
 from .sword_sweep import SwordSweep
-from src.utils.sprite_utils import get_sprite_bounds
+from src.utils.sprite_utils import get_sprite_bounds, make_shadow
 from src.constants import FPS
+from src.utils.enemy_utils import EnemyDrops
 
 class Devil(Enemy):
     
@@ -107,6 +108,9 @@ class Devil(Enemy):
             pygame.transform.scale(frame, (int(frame.get_width() * attack_sweep_scale), int(frame.get_height() * attack_sweep_scale)))
             for frame in raw_sweep_frames
         ]
+
+        shadow_image_raw = pygame.image.load("assets/misc/entity-shadow.png").convert_alpha()
+        self.shadow = make_shadow(shadow_image_raw, self.right_idle_frames[0].get_width())
 
         # Animation sequences (back and forth)
         self.idle_sequence = [0, 1, 2, 3, 4, 3, 2, 1]
@@ -263,8 +267,9 @@ class Devil(Enemy):
                     self.image = self.death_frames[self.death_frame_index]
                     self.death_frame_index += 1
                 else:
-                    self.kill()  
                     self.die()
+                    self.death_drops_generation(player)  # Generate drops upon death
+                    self.kill() 
             elif self.is_hit:
                 # Play hit animation (back and forth)
                 self.hit_frame_index = (self.hit_frame_index + 1) % len(self.hit_sequence)

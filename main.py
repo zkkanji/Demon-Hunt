@@ -6,7 +6,7 @@ from src.entities.player import Player
 from src.weapons.blaster import Blaster   
 from src.weapons.sword import Sword
 from src.entities.devil1 import Devil
-from src.game import check_projectile_collision, check_player_enemy_collision, pause_game, advance_wave, get_enemy_spawn_position, check_enemy_enemy_collision
+from src.game import check_projectile_collision, check_player_enemy_collision, pause_game, advance_wave, get_enemy_spawn_position, check_enemy_enemy_collision, check_player_drop_collision
 from src.utils.UImanager import UImanager
 from src.utils.upgrade_cards import player_upgrade_card, weapon_upgrade_card, weapon_unlock_card
 from src.utils.card_selection import initialize_upgrade_selection, update_and_draw_upgrade_cards, handle_card_click
@@ -14,7 +14,7 @@ from src.utils.card_selection import initialize_upgrade_selection, update_and_dr
 pygame.init()
 
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("First Zain Game")
+pygame.display.set_caption("Demon Hunt")
 
 clock = pygame.time.Clock()
 
@@ -36,6 +36,7 @@ pause_snapshot = None
 
 all_sprites = pygame.sprite.Group(player)
 enemies = pygame.sprite.Group()
+enemy_drops = pygame.sprite.Group()
 
 # Initialize first wave
 advance_wave()
@@ -46,9 +47,9 @@ enemy_spawn_rate = 120  # Spawn an enemy every 120 frames (2 seconds at 60 FPS)
 enemies_spawned_this_wave = 0  # Track how many enemies have been spawned this wave
 
 # Health buff cards
-health_up_10 = player_upgrade_card("Increase Health by 10", 10, f"assets/upgrade-cards/health-upgrade/health+10", player, "max_health")
-health_up_15 = player_upgrade_card("Increase Health by 15", 15, f"assets/upgrade-cards/health-upgrade/health+15", player, "max_health")
-health_up_20 = player_upgrade_card("Increase Health by 20", 20, f"assets/upgrade-cards/health-upgrade/health+20", player, "max_health")
+health_up_10 = player_upgrade_card("Increase Max Health by 10", 10, f"assets/upgrade-cards/health-upgrade/health+10", player, "max_health")
+health_up_15 = player_upgrade_card("Increase Max Health by 15", 15, f"assets/upgrade-cards/health-upgrade/health+15", player, "max_health")
+health_up_20 = player_upgrade_card("Increase Max Health by 20", 20, f"assets/upgrade-cards/health-upgrade/health+20", player, "max_health")
 health_upgrade_cards = [health_up_10, health_up_15, health_up_20]
 
 # Equipped Gun buff cards
@@ -72,7 +73,8 @@ magazine_upgrade_cards = [mag_up_2, mag_up_3, mag_up_5]
 # Equipped Melee Range buff cards
 range_up_5 = weapon_upgrade_card("Increase Current Melee Range by 5", 5, f"assets/upgrade-cards/melee-radius-upgrade/radius+5", player.weapons_inventory["melee"], "melee_range")
 range_up_10 = weapon_upgrade_card("Increase Current Melee Range by 10", 10, f"assets/upgrade-cards/melee-radius-upgrade/radius+10", player.weapons_inventory["melee"], "melee_range")
-melee_range_upgrade_cards = [range_up_5, range_up_10]
+range_up_15 = weapon_upgrade_card("Increase Current Melee Range by 15", 15, f"assets/upgrade-cards/melee-radius-upgrade/radius+15", player.weapons_inventory["melee"], "melee_range")
+melee_range_upgrade_cards = [range_up_5, range_up_10, range_up_15]
 
 # Variable to store selected cards during upgrade selection
 selected_upgrade_cards = None
@@ -90,7 +92,7 @@ while running:
                 # Handle card clicks during upgrade selection
                 if game.upgrade_selection_active and selected_upgrade_cards:
                     mouse_pos = pygame.mouse.get_pos()
-                    if handle_card_click(selected_upgrade_cards, mouse_pos) and not player.is_dying:
+                    if handle_card_click(selected_upgrade_cards, mouse_pos):
                         game.wave_interval_started = True 
                         game.upgrade_selection_active = False
                         selected_upgrade_cards = None
@@ -115,12 +117,15 @@ while running:
         # Draw shadows on the ground BEFORE drawing characters
         if player.is_alive:
             shadow_rect = player.shadow.get_rect(midbottom=(player.rect.centerx, player.rect.bottom-5))
-            screen.blit(player.shadow, shadow_rect)
+            screen.blit(player.shadow, (shadow_rect.x, shadow_rect.y-4))
         
         for enemy in enemies:
-            if enemy.enemy_type == "devil":
-                shadow_rect = enemy.shadow.get_rect(midbottom=(enemy.rect.centerx-2, enemy.rect.bottom-2))
-            screen.blit(enemy.shadow, shadow_rect)
+            shadow_rect = enemy.shadow.get_rect(midbottom=(enemy.rect.centerx-2, enemy.rect.bottom-2))
+            screen.blit(enemy.shadow, (shadow_rect.x, shadow_rect.y-6))
+
+        for drop in enemy_drops:
+            shadow_rect = drop.shadow.get_rect(midbottom=(drop.rect.centerx, drop.rect.bottom))
+            screen.blit(drop.shadow, (shadow_rect.x, shadow_rect.y+7))
         
         # Wave spawning system - spawn enemies up to the wave limit (but NOT during interval)
         if enemies_spawned_this_wave < game.max_enemies_current_wave and not game.wave_interval_started:
@@ -151,10 +156,19 @@ while running:
         all_sprites.update()  # Update all sprites (includes player with weapon sprites)
         player.weapons_inventory["gun"].update()  # Update the blaster (which updates its projectiles)
         player.weapons_inventory["melee"].update()  # Update the sword (which updates its attack animation)
+        living_before = list(enemies)
         enemies.update(player)  # Always update enemies (they check internally if player is alive)
+
+        # Harvest drops from enemies that died this frame
+        for enemy in living_before:
+            if not enemy.alive():
+                for drop in enemy.pending_drops:
+                    enemy_drops.add(drop)
+                enemy.pending_drops.clear()
+        enemy_drops.update()
         
         # Check if gun reload should complete (happens every frame)
-        blaster.check_reload_completion(player.misc_inventory["ammo"])
+        blaster.check_reload_completion()
         
         ui_manager.update(player, blaster)  # Update UI elements with current player and gun state
         
@@ -175,7 +189,10 @@ while running:
         check_projectile_collision(sword.sweeps, enemies)
         check_player_enemy_collision(player, enemies)
         check_enemy_enemy_collision(enemies)
-        
+        for drop in enemy_drops:
+            if check_player_drop_collision(player, drop):
+                drop.collect()
+
         # Check enemy sweeps collision with player
         for enemy in enemies:
             for sweep in enemy.melee_sweeps:
@@ -187,12 +204,15 @@ while running:
                         player.take_damage(enemy.attack_damage)
                     sweep.kill()  # Remove sweep after hitting player
 
-        all_sprites.draw(screen)  # Draw all sprites
-        
+        # Drawing of all things on screen
+        all_sprites.draw(screen) 
         enemies.draw(screen)
+        enemy_drops.draw(screen)
         for enemy in enemies:
             enemy.healthbar.draw(screen)  # Draw health bars for enemies
-        
+            for dn in enemy.damage_numbers:
+                dn.draw(screen)
+
         # Draw melee cooldown bar above player (only if cooldown is active)
         if cooldown_remaining > 0:
             sword.cooldown_bar.draw(screen)
@@ -223,7 +243,7 @@ while running:
         # Draw pause screen overlay
         pygame.mouse.set_visible(True)
         screen.blit(pause_snapshot, (0, 0))  # Show the captured game screen when paused
-        overlay = pygame.Surface((WIDTH, HEIGHT)); overlay.set_alpha(70); overlay.fill((0, 0, 0))
+        overlay = pygame.Surface((WIDTH, HEIGHT)); overlay.set_alpha(62); overlay.fill((0, 0, 0))
         screen.blit(overlay, (0, 0)) 
         ui_manager.draw(player)
         
@@ -239,6 +259,5 @@ while running:
         pygame.display.flip()  # Still display when paused
     clock.tick(FPS)  # Maintain the frame rate
 
-    
 pygame.quit()
 sys.exit()

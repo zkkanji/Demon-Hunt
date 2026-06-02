@@ -41,7 +41,7 @@ class GunBase(BaseWeapon):
         
         return player_ammo
 
-    def check_reload_completion(self, player_ammo):
+    def check_reload_completion(self):
         """Check if reload should finish and complete it (runs every frame)"""
         if self.is_reloading and self.time_of_last_reload != 0:
             current_time = pygame.time.get_ticks()

@@ -1,6 +1,6 @@
 import pygame 
 from .base_entity import BaseEntity
-from src.utils.sprite_utils import get_sprite_bounds
+from src.utils.sprite_utils import get_sprite_bounds, make_shadow
 
 class Player(BaseEntity):
 
@@ -14,9 +14,8 @@ class Player(BaseEntity):
         }  
         self.gun_inventory = []
         self.melee_inventory = []
-        self.misc_inventory = {
-            "ammo" : 1000
-        }
+        self.ammo = 100
+        self.powerup = None
         self.weapon_equipped = None  # Track which weapon is currently equipped
         self.previous_space_pressed = False
         self.movement_speed = 3.7 #3.7 is standard
@@ -166,15 +165,14 @@ class Player(BaseEntity):
         ]
 
         shadow_image_raw = pygame.image.load("assets/misc/entity-shadow.png").convert_alpha()
-        self.shadow = pygame.transform.scale(shadow_image_raw, (int(shadow_image_raw.get_width() * (2)), int(shadow_image_raw.get_height() * (1.5))))
-        self.shadow.set_alpha(100)  # Make shadow semi-transparent
+        self.shadow = make_shadow(shadow_image_raw, self.blaster_idle_right[0].get_width())
 
         self.frame_counter = 0
         self.hit_frame_counter = 0
         self.death_frame_counter = 0
         self.frame_speed = 5
         self.attack_frame_speed = 2  # Faster animation for attacks
-        self.death_frame_speed = 2  # Faster death animation
+        self.death_frame_speed = 1  # Faster death animation
         self.is_moving = False
         self.cursor_side = "right"  # Track which side cursor is on
         self.is_attacking = False  # Track if player is in attack animation
@@ -237,7 +235,7 @@ class Player(BaseEntity):
             self.previous_space_pressed = keys[pygame.K_SPACE]
         if keys[pygame.K_r]:
             if self.weapon_equipped and self.weapon_equipped.weapon_type == "gun":
-                self.misc_inventory["ammo"] = self.weapon_equipped.reload(self.misc_inventory["ammo"])
+                self.ammo = self.weapon_equipped.reload(self.ammo)
         if keys[pygame.K_1]:
             if self.weapons_inventory["gun"] is not None:
                 self.equip_weapon(self.weapons_inventory["gun"])
@@ -277,8 +275,8 @@ class Player(BaseEntity):
         self.handle_input()  # Handle player input to update velocity
         super().update()  # Call the base class update to move the player
 
-        if self.weapon_equipped and self.weapon_equipped.weapon_type == "gun" and self.weapon_equipped.ammo == 0 and self.misc_inventory["ammo"] > 0:
-            self.misc_inventory["ammo"] = self.weapon_equipped.reload(self.misc_inventory["ammo"])
+        if self.weapon_equipped and self.weapon_equipped.weapon_type == "gun" and self.weapon_equipped.ammo == 0 and self.ammo > 0:
+            self.ammo = self.weapon_equipped.reload(self.ammo)
         
         # Keep collision rect synced with player position
         self.collision_rect.center = self.rect.center

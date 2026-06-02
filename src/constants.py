@@ -3,3 +3,4 @@ HEIGHT = 700
 FPS = 60
 
 BG_COLOR = (46, 139, 87)  # Green background color
+UI_COLOR = (200, 200, 200)  # Light gray for UI elements

@@ -3,6 +3,8 @@ from .base_entity import BaseEntity
 from abc import ABC, abstractmethod
 import src.game as game
 from src.game import decrement_wave_enemies
+from src.utils.enemy_utils import DamageNumber, EnemyDrops
+import random
 
 class Enemy(BaseEntity, ABC):
 
@@ -29,10 +31,9 @@ class Enemy(BaseEntity, ABC):
         self.attack_cooldown = attack_cooldown  # milliseconds
         self.last_wave_processed = 0
         self.enemy_type = enemy_type
-        #shadow image code
-        shadow_image_raw = pygame.image.load("assets/misc/entity-shadow.png").convert_alpha()
-        self.shadow = pygame.transform.scale(shadow_image_raw, (int(shadow_image_raw.get_width() * (2)), int(shadow_image_raw.get_height() * (1.5))))
-        self.shadow.set_alpha(100)  # Make shadow semi-transparent
+        self.shadow = None  # set by subclass after frames are loaded
+        self.damage_numbers = []
+        self.pending_drops = []  
 
     @abstractmethod
     def primary_attack(self, player):
@@ -40,6 +41,10 @@ class Enemy(BaseEntity, ABC):
 
     def take_damage(self, damage_amount):
         self.current_health -= damage_amount
+        dnx, dny = self.rect.topright
+        dnx += 10
+        dny += 10
+        self.damage_numbers.append(DamageNumber((dnx, dny), damage_amount))
         if self.current_health <= 0:
             self.is_dying = True
         else:
@@ -67,7 +72,7 @@ class Enemy(BaseEntity, ABC):
     def wave_update(self):
         if game.wave_number > self.last_wave_processed and game.wave_number > 1:
             self.last_wave_processed = game.wave_number
-            health_increment = (game.wave_number-1) * 20
+            health_increment = (game.wave_number-1) * 17
             attack_increment = (game.wave_number-1) * 5
             knockback_increment = (game.wave_number-1) * 5 
             self.max_health += health_increment
@@ -77,7 +82,19 @@ class Enemy(BaseEntity, ABC):
 
     def die(self):
         decrement_wave_enemies()  # Decrement the count of enemies left in the wave when this enemy dies
+    
+    def death_drops_generation(self, player):
+        random_index = random.randint(0, 4)
+        if random_index == 0:
+            drop = EnemyDrops((self.x, self.y), 15, player, "current_health")
+            self.pending_drops.append(drop)
+        elif random_index == 1 or random_index == 2:  # Increase chance for ammo drops
+            drop = EnemyDrops((self.x, self.y), 15, player, "ammo")
+            self.pending_drops.append(drop)
 
     def update(self):
         super().update()  # Update position based on velocity and handle border control
         self.wave_update()  # Check for wave events and update stats if needed
+        for dn in self.damage_numbers:
+            dn.update()
+        self.damage_numbers = [dn for dn in self.damage_numbers if not dn.is_expired()]
