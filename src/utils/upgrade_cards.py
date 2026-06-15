@@ -1,4 +1,5 @@
 import pygame
+#from . import power_ups as pup
 from src.constants import WIDTH, UI_COLOR
 
 class card:
@@ -25,6 +26,7 @@ class card:
         self.animation_tick = 0
         self.is_hovering = False
         self.ticks_per_frame = 3
+        self.card_type = None
 
         # Description text setup
         self.font_letters = pygame.font.Font(f"assets/fonts/minecraftia/Minecraftia.ttf", 24)
@@ -67,6 +69,7 @@ class player_upgrade_card(card):
         self.player = player
         self.attribute_name = attribute_name
         self.effecting_attribute_value = getattr(player, attribute_name)
+        self.card_type = "upgrade"
 
     def apply_upgrade(self):
         self.effecting_attribute_value = getattr(self.player, self.attribute_name)
@@ -84,6 +87,7 @@ class weapon_upgrade_card(card):
         self.weapon = weapon
         self.attribute_name = attribute_name
         self.effecting_attribute_value = getattr(weapon, attribute_name, None)
+        self.card_type = "upgrade"
 
     def apply_upgrade(self):
         self.effecting_attribute_value = getattr(self.weapon, self.attribute_name)
@@ -96,6 +100,7 @@ class weapon_unlock_card(card):
         super().__init__(name, image_folder)
         self.player = player
         self.weapon_to_unlock = weapon_to_unlock
+        self.card_type = "weapon_unlock"
     
     def unlock_weapon(self):
         if self.weapon_to_unlock not in self.player.gun_inventory and self.weapon_to_unlock not in self.player.melee_inventory:
@@ -103,3 +108,13 @@ class weapon_unlock_card(card):
                 self.player.gun_inventory.append(self.weapon_to_unlock)
             elif self.weapon_to_unlock.weapon_type == "melee":
                 self.player.melee_inventory.append(self.weapon_to_unlock)
+
+class power_up_card(card):
+    def __init__(self, player, power_up, image_folder):
+        super().__init__(power_up.text, image_folder)
+        self.player = player
+        self.power_up = power_up
+        self.card_type = "power_up"
+
+    def unlock_powerup(self):
+        self.player.power_up = self.power_up

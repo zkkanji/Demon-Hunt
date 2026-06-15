@@ -122,6 +122,25 @@ def check_player_drop_collision(player, drop):
     player_collision_rect = getattr(player, 'collision_rect', player.rect)
     return player_collision_rect.colliderect(drop.rect)
 
+def check_bomb_explosion_collisions(bombs, enemies, player):
+    for bomb in bombs:
+        if bomb.state != "exploding":
+            continue
+
+        for enemy in enemies:
+            if enemy in bomb.damaged_entities:
+                continue
+            enemy_collision_rect = getattr(enemy, 'collision_rect', enemy.rect)
+            if bomb.rect.colliderect(enemy_collision_rect):
+                enemy.take_damage(bomb.damage)
+                bomb.damaged_entities.add(enemy)
+
+        if player not in bomb.damaged_entities:
+            player_collision_rect = getattr(player, 'collision_rect', player.rect)
+            if bomb.rect.colliderect(player_collision_rect):
+                player.take_damage(bomb.damage)
+                bomb.damaged_entities.add(player)
+
 def advance_wave():
     global wave_number, enemies_left_in_wave, max_enemies_current_wave, wave_interval_started, wave_interval_start_time
     wave_number += 1

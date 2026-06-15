@@ -61,6 +61,11 @@ class UImanager:
         self.wave_interval_coords = (WIDTH // 2, HEIGHT // 2 - 20)
         self.wave_interval_value = self.font_numbers_large.render(f"{game.wave_interval_timer // 1000}", True, UI_COLOR)
 
+        # Current Power-ups UI
+        self.power_up_coords = (5, HEIGHT - 90)
+        self.power_up_scale = 1.75
+        self.power_up_image = None
+
     def update(self, player, gun):
         self.healthbar.max_value = player.max_health
         self.healthbar.update(player.current_health)
@@ -69,6 +74,9 @@ class UImanager:
         self.wave_value = self.font_numbers.render(f"{game.wave_number}", True, UI_COLOR)
         self.enemies_value = self.font_numbers.render(f"{game.enemies_left_in_wave}", True, UI_COLOR)
         self.wave_interval_value = self.font_numbers_large.render(f"{game.wave_interval_timer // 1000}", True, UI_COLOR)
+        if player.power_up is not None:
+            self.power_up_image = player.power_up.UI_logo
+            self.power_up_image = pygame.transform.scale(self.power_up_image, (self.power_up_image.get_width() * self.power_up_scale, self.power_up_image.get_height() * self.power_up_scale))
 
     def draw(self, player):
         if game.pause_state and not game.upgrade_selection_active:
@@ -79,6 +87,8 @@ class UImanager:
             if player.weapon_equipped.weapon_type == "gun":
                 self.screen.blit(self.ammo_logo, self.ammo_logo_coords)
                 self.screen.blit(self.ammo_text, self.ammo_text_coords)
+            if player.power_up is not None:
+                self.screen.blit(self.power_up_image, self.power_up_coords)
             self.screen.blit(self.score_text, self.score_text_coords)
             self.screen.blit(self.score_value, self.score_value_coords)
             self.screen.blit(self.wave_text, self.wave_text_coords)

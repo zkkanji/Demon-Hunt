@@ -46,9 +46,11 @@ def handle_card_click(selected_cards, mouse_pos):
     for card in selected_cards:
         # Use collision_rect for tighter click detection
         if card.collision_rect.collidepoint(mouse_pos):
-            # Check if it's a weapon unlock card or a regular upgrade card
+            # Check if it's a weapon unlock card, power-up card, or a regular upgrade card
             if hasattr(card, 'unlock_weapon'):
                 card.unlock_weapon()
+            elif hasattr(card, 'unlock_powerup'):
+                card.unlock_powerup()
             else:
                 card.apply_upgrade()
             return True

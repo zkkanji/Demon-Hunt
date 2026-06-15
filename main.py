@@ -6,9 +6,10 @@ from src.entities.player import Player
 from src.weapons.blaster import Blaster   
 from src.weapons.sword import Sword
 from src.entities.devil1 import Devil
-from src.game import check_projectile_collision, check_player_enemy_collision, pause_game, advance_wave, get_enemy_spawn_position, check_enemy_enemy_collision, check_player_drop_collision
+from src.game import check_projectile_collision, check_player_enemy_collision, pause_game, advance_wave, get_enemy_spawn_position, check_enemy_enemy_collision, check_player_drop_collision, check_bomb_explosion_collisions
 from src.utils.UImanager import UImanager
-from src.utils.upgrade_cards import player_upgrade_card, weapon_upgrade_card, weapon_unlock_card
+from src.utils.upgrade_cards import player_upgrade_card, weapon_upgrade_card, weapon_unlock_card, power_up_card
+from src.utils.power_ups import Invincibility, SpeedBoost, Bomb_PowerUp
 from src.utils.card_selection import initialize_upgrade_selection, update_and_draw_upgrade_cards, handle_card_click
 
 pygame.init()
@@ -37,6 +38,7 @@ pause_snapshot = None
 all_sprites = pygame.sprite.Group(player)
 enemies = pygame.sprite.Group()
 enemy_drops = pygame.sprite.Group()
+bombs = pygame.sprite.Group()
 
 # Initialize first wave
 advance_wave()
@@ -75,6 +77,17 @@ range_up_5 = weapon_upgrade_card("Increase Current Melee Range by 5", 5, f"asset
 range_up_10 = weapon_upgrade_card("Increase Current Melee Range by 10", 10, f"assets/upgrade-cards/melee-radius-upgrade/radius+10", player.weapons_inventory["melee"], "melee_range")
 range_up_15 = weapon_upgrade_card("Increase Current Melee Range by 15", 15, f"assets/upgrade-cards/melee-radius-upgrade/radius+15", player.weapons_inventory["melee"], "melee_range")
 melee_range_upgrade_cards = [range_up_5, range_up_10, range_up_15]
+
+# Power-up cards
+invincibility_powerup = Invincibility(player, 10000)
+speed_boost_powerup = SpeedBoost(player, 10000)
+
+invincibility_card = power_up_card(player, invincibility_powerup, f"assets/upgrade-cards/powerup-cards/invincibility")
+speed_boost_card = power_up_card(player, speed_boost_powerup, f"assets/upgrade-cards/powerup-cards/speed-boost")
+
+bomb_powerup = Bomb_PowerUp(player, 0)
+bomb_card = power_up_card(player, bomb_powerup, f"assets/upgrade-cards/powerup-cards/bomb")
+power_up_cards = [invincibility_card, speed_boost_card, bomb_card]
 
 # Variable to store selected cards during upgrade selection
 selected_upgrade_cards = None
@@ -147,7 +160,8 @@ while running:
                     gun_upgrade_cards,
                     melee_upgrade_cards,
                     magazine_upgrade_cards,
-                    melee_range_upgrade_cards
+                    melee_range_upgrade_cards,
+                    power_up_cards
                 ]
                 selected_upgrade_cards = initialize_upgrade_selection(card_lists)
                 game.upgrade_selection_active = True
@@ -166,6 +180,12 @@ while running:
                     enemy_drops.add(drop)
                 enemy.pending_drops.clear()
         enemy_drops.update()
+
+        # Harvest bombs dropped this frame
+        for bomb in bomb_powerup.pending_bombs:
+            bombs.add(bomb)
+        bomb_powerup.pending_bombs.clear()
+        bombs.update()
         
         # Check if gun reload should complete (happens every frame)
         blaster.check_reload_completion()
@@ -192,6 +212,7 @@ while running:
         for drop in enemy_drops:
             if check_player_drop_collision(player, drop):
                 drop.collect()
+        check_bomb_explosion_collisions(bombs, enemies, player)
 
         # Check enemy sweeps collision with player
         for enemy in enemies:
@@ -205,9 +226,11 @@ while running:
                     sweep.kill()  # Remove sweep after hitting player
 
         # Drawing of all things on screen
-        all_sprites.draw(screen) 
+        all_sprites.draw(screen)
         enemies.draw(screen)
         enemy_drops.draw(screen)
+        for bomb in bombs:
+            bomb.draw(screen)
         for enemy in enemies:
             enemy.healthbar.draw(screen)  # Draw health bars for enemies
             for dn in enemy.damage_numbers:

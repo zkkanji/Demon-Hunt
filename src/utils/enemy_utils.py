@@ -43,7 +43,7 @@ class EnemyDrops(Sprite):
             raw_image = pygame.image.load(f"assets/misc/drops/health.png").convert_alpha()
         self.image = pygame.transform.scale(raw_image, (raw_image.get_width() * image_scale, raw_image.get_height() * image_scale))   
         self.rect = self.image.get_rect(center=(self.x, self.y))
-        self.lifetime = 10000 #ms
+        self.lifetime = 125000 #ms
         self.spawn_time = pygame.time.get_ticks()
         self.effecting_attribute = getattr(self.player, self.player_attribute)
         shadow_image_raw = pygame.image.load("assets/misc/entity-shadow.png").convert_alpha()

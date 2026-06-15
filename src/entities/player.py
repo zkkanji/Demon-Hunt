@@ -14,8 +14,10 @@ class Player(BaseEntity):
         }  
         self.gun_inventory = []
         self.melee_inventory = []
-        self.ammo = 100
-        self.powerup = None
+        self.ammo = 70
+        self.power_up = None  # currently held, unused power-up
+        self.active_power_ups = []  # power-ups currently in effect
+        self.is_invincible = False
         self.weapon_equipped = None  # Track which weapon is currently equipped
         self.previous_space_pressed = False
         self.movement_speed = 3.7 #3.7 is standard
@@ -242,6 +244,12 @@ class Player(BaseEntity):
         if keys[pygame.K_2]:
             if self.weapons_inventory["melee"] is not None:
                 self.equip_weapon(self.weapons_inventory["melee"])
+        if self.power_up is not None:
+            if keys[pygame.K_e]:
+                self.power_up.use_powerup()
+                if self.power_up.has_time_limit:
+                    self.active_power_ups.append(self.power_up)
+                self.power_up = None
         mouse_pos = pygame.mouse.get_pos()
         self.direction = self.calculate_direction(mouse_pos)
 
@@ -274,6 +282,11 @@ class Player(BaseEntity):
     def update(self):
         self.handle_input()  # Handle player input to update velocity
         super().update()  # Call the base class update to move the player
+
+        # Update active power-ups and revert any that have expired
+        for power_up in self.active_power_ups:
+            power_up.update()
+        self.active_power_ups = [p for p in self.active_power_ups if p.is_active]
 
         if self.weapon_equipped and self.weapon_equipped.weapon_type == "gun" and self.weapon_equipped.ammo == 0 and self.ammo > 0:
             self.ammo = self.weapon_equipped.reload(self.ammo)
@@ -417,6 +430,8 @@ class Player(BaseEntity):
 
     def take_damage(self, damage_amount):
         """Apply damage to the player and trigger hit animation."""
+        if self.is_invincible:
+            return
         self.current_health -= damage_amount
         if self.current_health < 0:
             self.current_health = 0

@@ -73,8 +73,8 @@ class Enemy(BaseEntity, ABC):
         if game.wave_number > self.last_wave_processed and game.wave_number > 1:
             self.last_wave_processed = game.wave_number
             health_increment = (game.wave_number-1) * 17
-            attack_increment = (game.wave_number-1) * 5
-            knockback_increment = (game.wave_number-1) * 5 
+            attack_increment = (game.wave_number-1) * 3
+            knockback_increment = (game.wave_number-1) * 2 
             self.max_health += health_increment
             self.current_health = self.max_health       
             self.attack_damage += attack_increment
@@ -84,7 +84,7 @@ class Enemy(BaseEntity, ABC):
         decrement_wave_enemies()  # Decrement the count of enemies left in the wave when this enemy dies
     
     def death_drops_generation(self, player):
-        random_index = random.randint(0, 4)
+        random_index = random.randint(0, 5)
         if random_index == 0:
             drop = EnemyDrops((self.x, self.y), 15, player, "current_health")
             self.pending_drops.append(drop)
