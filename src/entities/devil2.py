@@ -1,11 +1,9 @@
 import pygame
-import math
 import src.game as game
 from .enemy_base import Enemy
 from src.utils.progressbar import ProgressBar
 from src.entities.projectile import AnimatedProjectile
 from src.utils.sprite_utils import get_sprite_bounds, make_shadow
-from src.constants import FPS
 
 class Devil2(Enemy):
 
@@ -18,7 +16,7 @@ class Devil2(Enemy):
                         knockback_damage=5,
                         movement_speed=1.5,
                         scale_factor=2.5,
-                        attack_cooldown=700,
+                        attack_cooldown=800,
                         enemy_type="ranged devil")
 
         self.shoot_radius = 250

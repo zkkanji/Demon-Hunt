@@ -84,11 +84,11 @@ class Enemy(BaseEntity, ABC):
         decrement_wave_enemies()  # Decrement the count of enemies left in the wave when this enemy dies
     
     def death_drops_generation(self, player):
-        random_index = random.randint(0, 5)
-        if random_index == 0:
+        random_index = random.randint(0, 6)
+        if random_index == 0 or random_index == 6:  
             drop = EnemyDrops((self.x, self.y), 15, player, "current_health")
             self.pending_drops.append(drop)
-        elif random_index == 1 or random_index == 2:  # Increase chance for ammo drops
+        elif random_index == 1 or random_index == 2: 
             drop = EnemyDrops((self.x, self.y), 15, player, "ammo")
             self.pending_drops.append(drop)
 

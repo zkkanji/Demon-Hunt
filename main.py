@@ -2,14 +2,14 @@ import pygame
 import sys
 import random
 import src.game as game
-from src.constants import WIDTH, HEIGHT, FPS, BG_COLOR
+from src.constants import MIN_WIDTH, MIN_HEIGHT, FPS, BG_COLOR
 from src.entities.player import Player
 from src.weapons.blaster import Blaster   
 from src.weapons.shotgun import Shotgun
 from src.weapons.sword import Sword
 from src.entities.devil1 import Devil1
 from src.entities.devil2 import Devil2
-from src.game import check_projectile_collision, check_player_enemy_collision, pause_game, advance_wave, get_enemy_spawn_position, check_enemy_enemy_collision, check_player_drop_collision, check_bomb_explosion_collisions
+from src.game import check_projectile_collision, check_player_enemy_collision, pause_game, advance_wave, get_enemy_spawn_position, check_enemy_enemy_collision, check_player_drop_collision, check_bomb_explosion_collisions, check_sword_projectile_collisions
 from src.utils.UImanager import UImanager
 from src.utils.upgrade_cards import player_upgrade_card, weapon_upgrade_card, weapon_unlock_card, power_up_card
 from src.utils.power_ups import Invincibility, SpeedBoost, Bomb_PowerUp
@@ -17,12 +17,12 @@ from src.utils.card_selection import initialize_upgrade_selection, update_and_dr
 
 pygame.init()
 
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
+screen = pygame.display.set_mode((MIN_WIDTH, MIN_HEIGHT), pygame.RESIZABLE)
 pygame.display.set_caption("Demon Hunt")
 
 clock = pygame.time.Clock()
 
-player = Player(WIDTH // 2, HEIGHT // 2)
+player = Player(MIN_WIDTH // 2, MIN_HEIGHT // 2)
 blaster = Blaster()
 sword = Sword()
 shotgun = Shotgun()
@@ -64,7 +64,7 @@ health_upgrade_cards = [health_up_10, health_up_15, health_up_20]
 gun_dmg_up_5 = weapon_upgrade_card("Increase Equipped Gun Damage by 5", 5, f"assets/upgrade-cards/gun-upgrade/gun+5", player.weapons_inventory["gun"], "damage")
 gun_dmg_up_10 = weapon_upgrade_card("Increase Equipped Gun Damage by 10", 10, f"assets/upgrade-cards/gun-upgrade/gun+10", player.weapons_inventory["gun"], "damage")
 gun_dmg_up_15 = weapon_upgrade_card("Increase Equipped Gun Damage by 15", 15, f"assets/upgrade-cards/gun-upgrade/gun+15", player.weapons_inventory["gun"], "damage")
-gun_upgrade_cards = [gun_dmg_up_5, gun_dmg_up_10, gun_dmg_up_15]
+gun_dmg_upgrade_cards = [gun_dmg_up_5, gun_dmg_up_10, gun_dmg_up_15]
 
 # Equipped Melee buff cards
 melee_dmg_up_5 = weapon_upgrade_card("Increase Equipped Melee Damage by 5", 5, f"assets/upgrade-cards/melee-upgrade/melee+5", player.weapons_inventory["melee"], "damage")
@@ -85,7 +85,7 @@ shotgun_magazine_upgrade_cards = [mag_up_3, mag_up_6, mag_up_9]
 range_up_5 = weapon_upgrade_card("Increase Current Melee Range by 5", 5, f"assets/upgrade-cards/melee-radius-upgrade/radius+5", player.weapons_inventory["melee"], "melee_range")
 range_up_10 = weapon_upgrade_card("Increase Current Melee Range by 10", 10, f"assets/upgrade-cards/melee-radius-upgrade/radius+10", player.weapons_inventory["melee"], "melee_range")
 range_up_15 = weapon_upgrade_card("Increase Current Melee Range by 15", 15, f"assets/upgrade-cards/melee-radius-upgrade/radius+15", player.weapons_inventory["melee"], "melee_range")
-melee_range_upgrade_cards = [range_up_5, range_up_10, range_up_15]
+sword_range_upgrade_cards = [range_up_5, range_up_10, range_up_15]
 
 # Power-up cards
 invincibility_powerup = Invincibility(player, 10000)
@@ -110,6 +110,12 @@ while running:
             # Only allow pause toggle if upgrade cards are not being shown
             if not game.upgrade_selection_active:
                 pause_game()
+        elif event.type == pygame.WINDOWRESIZED:
+            new_w = max(MIN_WIDTH, event.x)
+            new_h = max(MIN_HEIGHT, event.y)
+            if (new_w, new_h) != screen.get_size():
+                screen = pygame.display.set_mode((new_w, new_h), pygame.RESIZABLE)
+                ui_manager.screen = screen
         elif event.type == pygame.MOUSEBUTTONDOWN:
                 # Handle card clicks during upgrade selection
                 if game.upgrade_selection_active and selected_upgrade_cards:
@@ -154,7 +160,7 @@ while running:
             enemy_spawn_timer += 1
             if enemy_spawn_timer >= enemy_spawn_rate and len(enemies) < game.MOST_ENEMIES_ON_SCREEN:
                 x, y = get_enemy_spawn_position()
-                enemy = random.choice([Devil1])(x, y)
+                enemy = random.choice([Devil1, Devil2])(x, y)
                 enemies.add(enemy)
                 enemies_spawned_this_wave += 1  # Increment spawned counter
                 enemy_spawn_timer = 0
@@ -166,17 +172,21 @@ while running:
                 # Initialize upgrade card selection overlay
                 card_lists = [
                     health_upgrade_cards,
-                    gun_upgrade_cards,
+                    gun_dmg_upgrade_cards,
                     melee_upgrade_cards,
-                    melee_range_upgrade_cards,
                     power_up_cards
                 ]
+                #Append appropriate card lists based on current loadout
                 if player.weapons_inventory["gun"].name == "Blaster":
                     update_upgrade_card_weapons(blaster_magazine_upgrade_cards, player.weapons_inventory["gun"])
                     card_lists.append(blaster_magazine_upgrade_cards)
                 elif player.weapons_inventory["gun"].name == "Shotgun":
                     update_upgrade_card_weapons(shotgun_magazine_upgrade_cards, player.weapons_inventory["gun"])
                     card_lists.append(shotgun_magazine_upgrade_cards)
+
+                if player.weapons_inventory["melee"].name == "Sword":
+                    update_upgrade_card_weapons(sword_range_upgrade_cards, player.weapons_inventory["melee"])
+                    card_lists.append(sword_range_upgrade_cards)
                 selected_upgrade_cards = initialize_upgrade_selection(card_lists)
                 game.upgrade_selection_active = True
                 game.pause_state = True
@@ -250,6 +260,14 @@ while running:
                             player.take_damage(enemy.attack_damage)
                         sweep.kill()  # Remove sweep after hitting player
 
+        # Parry: sword sweeps destroy enemy projectiles before player collision is checked
+        if player.weapons_inventory["melee"].name == "Sword":
+            check_sword_projectile_collisions(player.weapons_inventory["melee"].sweeps, enemy_projectiles)
+            check_sword_projectile_collisions(sword.sweeps, enemy_projectiles)
+            for enemy in enemies:
+                if hasattr(enemy, 'projectiles'):
+                    check_sword_projectile_collisions(sword.sweeps, enemy.projectiles)
+
         # Check enemy projectiles collision with player
         player_collision_rect = getattr(player, 'collision_rect', player.rect)
         for enemy in enemies:
@@ -307,8 +325,9 @@ while running:
     elif game.pause_state:
         # Draw pause screen overlay
         pygame.mouse.set_visible(True)
-        screen.blit(pause_snapshot, (0, 0))  # Show the captured game screen when paused
-        overlay = pygame.Surface((WIDTH, HEIGHT)); overlay.set_alpha(62); overlay.fill((0, 0, 0))
+        snapshot = pause_snapshot if pause_snapshot.get_size() == screen.get_size() else pygame.transform.scale(pause_snapshot, screen.get_size())
+        screen.blit(snapshot, (0, 0))  # Show the captured game screen when paused
+        overlay = pygame.Surface(screen.get_size()); overlay.set_alpha(62); overlay.fill((0, 0, 0))
         screen.blit(overlay, (0, 0)) 
         ui_manager.draw(player)
         

@@ -1,16 +1,13 @@
 import pygame
 import random
-from .constants import WIDTH, HEIGHT
 
 game_score = 0
 wave_number = 0
 pause_state = False
 max_enemies_current_wave = 0
 enemies_left_in_wave = max_enemies_current_wave
-ENEMIES_PER_WAVE = [5, 5, 7, 10, 12, 15, 17, 18, 20, 23, 25]
+ENEMIES_PER_WAVE = [5, 5, 7, 10, 12, 15, 17]
 MOST_ENEMIES_ON_SCREEN = 10  # Max number of enemies to spawn at once for performance reasons
-enemy_x_left_spawn_bounds = (-50, -30)  
-enemy_x_right_spawn_bounds = (WIDTH + 30, WIDTH + 50)  
 WAVE_INTERVAL_TIME = 5000  # milliseconds (5 seconds) between waves
 wave_interval_timer = 0
 wave_interval_started = False
@@ -18,17 +15,18 @@ wave_interval_start_time = 0
 upgrade_selection_active = False
 
 def get_enemy_spawn_position():
+    surface = pygame.display.get_surface()
+    screen_w, screen_h = surface.get_width(), surface.get_height()
+
     # Randomly choose left or right edge
     if random.choice([True, False]):
-        # Left edge
-        x = random.randint(enemy_x_left_spawn_bounds[0], enemy_x_left_spawn_bounds[1])
+        x = random.randint(-50, -30)
     else:
-        # Right edge
-        x = random.randint(enemy_x_right_spawn_bounds[0], enemy_x_right_spawn_bounds[1])
-    
+        x = random.randint(screen_w + 30, screen_w + 50)
+
     # Random Y position across screen height
-    y = random.randint(50, HEIGHT - 50)
-    
+    y = random.randint(50, screen_h - 50)
+
     return (x, y)
 
 
@@ -140,6 +138,16 @@ def check_bomb_explosion_collisions(bombs, enemies, player):
             if bomb.rect.colliderect(player_collision_rect):
                 player.take_damage(bomb.damage)
                 bomb.damaged_entities.add(player)
+
+def check_sword_projectile_collisions(sword_projectiles, enemy_projectiles):
+    for sword in sword_projectiles:
+        sword_collision_rect = getattr(sword, 'collision_rect', sword.rect)
+        for enemy_proj in enemy_projectiles:
+            enemy_proj_collision_rect = getattr(enemy_proj, 'collision_rect', enemy_proj.rect)
+            if sword_collision_rect.colliderect(enemy_proj_collision_rect):
+                sword.kill()
+                enemy_proj.kill()
+                break  # Exit inner loop since the sword is destroyed
 
 def advance_wave():
     global wave_number, enemies_left_in_wave, max_enemies_current_wave, wave_interval_started, wave_interval_start_time

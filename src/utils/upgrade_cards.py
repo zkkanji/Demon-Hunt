@@ -1,6 +1,6 @@
 import pygame
 #from . import power_ups as pup
-from src.constants import WIDTH, UI_COLOR
+from src.constants import UI_COLOR
 
 class card:
     
@@ -32,8 +32,6 @@ class card:
         self.font_letters = pygame.font.Font(f"assets/fonts/minecraftia/Minecraftia.ttf", 24)
         #self.font_letters.set_bold(True)
         self.desc = self.font_letters.render(self.text, True, UI_COLOR)
-        self.center_distance = self.desc.get_rect().width // 2
-        self.desc_coords = ((WIDTH // 2) - self.center_distance, self.rect.bottom + 140)
 
     def update(self, mouse_pos):
         # Update collision rect position to match rect

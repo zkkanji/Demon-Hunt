@@ -44,3 +44,24 @@ class Shotgun(GunBase):
 
     def update(self):
         self.projectiles.update()  # Update all active projectiles
+
+    def reload(self, player_ammo):
+        if self.ammo < self.ammo_limit and player_ammo > 0:
+            current_time = pygame.time.get_ticks()
+
+            if self.time_of_last_reload == 0:
+                ammo_needed = self.ammo_limit - self.ammo
+                raw_transfer = min(player_ammo, ammo_needed)
+                self.ammo_to_transfer = (raw_transfer // self.num_projectiles_per_shot) * self.num_projectiles_per_shot
+
+                if self.ammo_to_transfer == 0:
+                    return player_ammo  # Not enough reserve for even one shot's worth
+
+                self.time_of_last_reload = current_time
+                self.is_reloading = True
+                return player_ammo - self.ammo_to_transfer
+
+        if self.ammo >= self.ammo_limit:
+            self.is_reloading = False
+
+        return player_ammo
