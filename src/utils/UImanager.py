@@ -4,7 +4,7 @@ import src.game as game
 from src.constants import WIDTH, HEIGHT, UI_COLOR
 
 class UImanager:
-    def __init__(self, screen, player, gun):
+    def __init__(self, screen, player):
         self.screen = screen
         self.font_letters = pygame.font.Font(f"assets/fonts/minecraftia/Minecraftia.ttf", 18)
         self.font_numbers = pygame.font.Font(f"assets/fonts/smallest-pixel-7/smallest_pixel-7.ttf", 24)
@@ -37,7 +37,7 @@ class UImanager:
         ammo_logo_scale = 1.5
         ammo_logo_raw = pygame.image.load(f"assets/misc/ammologo.png")
         self.ammo_logo = pygame.transform.scale(ammo_logo_raw, (ammo_logo_raw.get_width() * ammo_logo_scale, ammo_logo_raw.get_height() * ammo_logo_scale))
-        self.ammo_text = self.font_numbers.render(f"{gun.ammo}/{player.ammo}", True, UI_COLOR)
+        self.ammo_text = self.font_numbers.render(f"{player.weapons_inventory["gun"].ammo}/{player.ammo}", True, UI_COLOR)
 
         # Game Score UI
         self.score_text_coords = (WIDTH -150, 23)
@@ -69,7 +69,7 @@ class UImanager:
     def update(self, player, gun):
         self.healthbar.max_value = player.max_health
         self.healthbar.update(player.current_health)
-        self.ammo_text = self.font_numbers.render(f"{gun.ammo}/{player.ammo}", True, UI_COLOR)
+        self.ammo_text = self.font_numbers.render(f"{player.weapons_inventory['gun'].ammo}/{player.ammo}", True, UI_COLOR)
         self.score_value = self.font_numbers.render(f"{game.game_score}", True, UI_COLOR)
         self.wave_value = self.font_numbers.render(f"{game.wave_number}", True, UI_COLOR)
         self.enemies_value = self.font_numbers.render(f"{game.enemies_left_in_wave}", True, UI_COLOR)

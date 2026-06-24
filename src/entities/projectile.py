@@ -36,3 +36,23 @@ class Projectile(BaseEntity):
         if (self.rect.right < 0 or self.rect.left > pygame.display.get_surface().get_width() or
             self.rect.bottom < 0 or self.rect.top > pygame.display.get_surface().get_height()):
             self.kill()
+
+
+class AnimatedProjectile(Projectile):
+
+    def __init__(self, x, y, velocity_x, velocity_y, damage, frames, sequence, frame_speed=4):
+        super().__init__(x, y, velocity_x, velocity_y, damage, sprite_image=frames[0])
+        self.frames = frames
+        self.frame_speed = frame_speed
+        self.frame_counter = 0
+        # Pingpong sequence: e.g. [0,1,2,1] for 3 frames
+        self.sequence = sequence
+        self.seq_index = 0
+
+    def update(self):
+        super().update()
+        self.frame_counter += 1
+        if self.frame_counter >= self.frame_speed:
+            self.frame_counter = 0
+            self.seq_index = (self.seq_index + 1) % len(self.sequence)
+            self.image = self.frames[self.sequence[self.seq_index]]

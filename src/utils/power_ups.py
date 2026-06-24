@@ -65,7 +65,7 @@ class Bomb_PowerUp(PowerUp):
                 for frame in explosion_frames_raw
             ]
             self.blast_radius_image = pygame.transform.scale(blast_radius_raw, (blast_diameter, blast_diameter))
-            self.blast_radius_image.set_alpha(70)  # Make the blast radius semi-transparent
+            self.blast_radius_image.set_alpha(60)  # Make the blast radius semi-transparent
             shadow_image_raw = pygame.image.load("assets/misc/entity-shadow.png").convert_alpha()
             self.shadow = make_shadow(shadow_image_raw, self.bomb_frames[0].get_width())
 
@@ -117,8 +117,8 @@ class Bomb_PowerUp(PowerUp):
     def __init__(self, player, duration):
         super().__init__(player, duration, "Bomb")
         self.text = "Power Up: A bomb that can be dropped and explodes after a short delay"
-        self.damage = 100
-        self.radius = 150
+        self.damage = 120
+        self.radius = 200
         self.pending_bombs = []  # newly-dropped bombs, harvested into a sprite group by main.py
         self.UI_logo = pygame.image.load("assets/upgrade-cards/powerup-cards/bomb/card.png").convert_alpha()
 

@@ -1,12 +1,11 @@
 import pygame
-
 from .gun_base import GunBase
 from src.entities.projectile import Projectile
 
 class Blaster(GunBase):
     
     def __init__(self):
-        super().__init__(name = "Blaster", damage = 10, is_automatic = False, ammo_limit=15, reload_time=800)
+        super().__init__(name = "Blaster", damage = 10, is_automatic = False, ammo_limit=15, reload_time=800, attack_cooldown=225)
         self.projectile_velocity = 10
         projectile_scale = 1.5
         self.projectiles = pygame.sprite.Group()  # Group to manage active projectiles
@@ -16,10 +15,12 @@ class Blaster(GunBase):
 
     def attack(self, player_pos, direction):
         if self.is_reloading:
-            return False  # Cannot attack while reloading
+            return False
         if self.ammo <= 0:
-            return False  # No ammo left, cannot fire
-        self.ammo -= 1  # Decrease ammunition by 1 each time the gun is fired
+            return False
+        if not self.check_shot_ready():
+            return False
+        self.ammo -= 1
 
         #Unpacking position and direction tuples
         px, py = player_pos
@@ -28,6 +29,8 @@ class Blaster(GunBase):
         vx = dx * self.projectile_velocity
         vy = dy * self.projectile_velocity
 
+        self.is_shooting = True
+        self.time_since_last_shot = pygame.time.get_ticks()
         projectile = Projectile(px+(2*vx), py+(2*vy), vx, vy, self.damage, sprite_image = self.projectile_image)
         self.projectiles.add(projectile)
         return True  # Attack succeeded

@@ -1,15 +1,13 @@
 import pygame
 import math
 import src.game as game
-import random
 from .enemy_base import Enemy
 from src.utils.progressbar import ProgressBar
 from .sword_sweep import SwordSweep
 from src.utils.sprite_utils import get_sprite_bounds, make_shadow
 from src.constants import FPS
-from src.utils.enemy_utils import EnemyDrops
 
-class Devil(Enemy):
+class Devil1(Enemy):
     
     def __init__(self, x, y):
         super().__init__(x, y, attack_duration=400, max_health=30, attack_damage=7, knockback_damage=4, movement_speed=1.5, scale_factor=2.5, attack_cooldown=900, enemy_type="devil")
@@ -109,8 +107,8 @@ class Devil(Enemy):
             for frame in raw_sweep_frames
         ]
 
-        shadow_image_raw = pygame.image.load("assets/misc/entity-shadow.png").convert_alpha()
-        self.shadow = make_shadow(shadow_image_raw, self.right_idle_frames[0].get_width())
+        self.shadow_image_raw = pygame.image.load("assets/misc/entity-shadow.png").convert_alpha()
+        self.shadow = make_shadow(self.shadow_image_raw, self.right_idle_frames[0].get_width())
 
         # Animation sequences (back and forth)
         self.idle_sequence = [0, 1, 2, 3, 4, 3, 2, 1]
@@ -181,7 +179,7 @@ class Devil(Enemy):
             sweep = SwordSweep(spawn_x, spawn_y, vx, vy, self.attack_damage, self.attack_duration, self.sweep_frames, angle=angle)
             self.melee_sweeps.add(sweep)
 
-            # Set attack state
+            # Set attack state 
             self.is_attacking = True
             self.attack_timer = current_time
             self.time_from_last_attack = current_time  # Reset cooldown timer
@@ -291,4 +289,7 @@ class Devil(Enemy):
                 self.idle_frame_index = (self.idle_frame_index + 1) % len(self.idle_sequence)
                 frame_to_show = self.idle_sequence[self.idle_frame_index]
                 self.image = idle_frames[frame_to_show]
+                
+        self.shadow = make_shadow(self.shadow_image_raw, self.image.get_width())
+
         

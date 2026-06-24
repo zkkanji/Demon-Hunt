@@ -2,7 +2,7 @@ import pygame
 
 def make_shadow(raw_image, sprite_width, alpha=100):
     """Scale shadow to match a sprite's width with flat ellipse proportions."""
-    shadow_w = int(sprite_width * 0.75)
+    shadow_w = int(sprite_width * 0.7)
     shadow_h = int(sprite_width * 0.4)
     shadow = pygame.transform.scale(raw_image, (shadow_w, shadow_h))
     shadow.set_alpha(alpha)

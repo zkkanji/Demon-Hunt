@@ -94,6 +94,9 @@ class weapon_upgrade_card(card):
         setattr(self.weapon, self.attribute_name, self.effecting_attribute_value + self.upgrade_amount)
         self.effecting_attribute_value = getattr(self.weapon, self.attribute_name)
 
+    def update_weapon(self, weapon):
+        self.weapon = weapon
+
 # Weapon unlocking card class
 class weapon_unlock_card(card):
     def __init__(self, name, player, weapon_to_unlock, image_folder):

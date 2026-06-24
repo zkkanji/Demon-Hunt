@@ -11,7 +11,7 @@ class Sword(MeleeBase):
         super().__init__(name = "Sword", damage = 20, is_automatic = False, melee_range = 140, attack_cooldown = 300)
 
         # Load sword sweep animation frames
-        sweep_scale = 4
+        sweep_scale = 5.5
         self.sweep_frames = [
             pygame.transform.scale(pygame.image.load(f"assets/misc/sword-sweep/sword-sweep{i}.png"), 
                                  (int(pygame.image.load(f"assets/misc/sword-sweep/sword-sweep{i}.png").get_width() * sweep_scale),

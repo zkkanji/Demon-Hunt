@@ -1,7 +1,6 @@
 from src.game import triple_card_selector
 from src.constants import WIDTH, HEIGHT
 
-
 def initialize_upgrade_selection(card_lists):
     # Create a combined list of all cards for random selection
     all_cards = []
@@ -33,6 +32,9 @@ def initialize_upgrade_selection(card_lists):
     
     return selected_cards
 
+def update_upgrade_card_weapons(card_list, new_weapon):
+    for i in range(len(card_list)):
+        card_list[i].update_weapon(new_weapon)
 
 def update_and_draw_upgrade_cards(screen, selected_cards, mouse_pos):
     for card in selected_cards:
