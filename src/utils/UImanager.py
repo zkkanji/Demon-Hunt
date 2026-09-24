@@ -69,11 +69,11 @@ class UImanager:
             self.power_up_image = player.power_up.UI_logo
             self.power_up_image = pygame.transform.scale(self.power_up_image, (self.power_up_image.get_width() * self.power_up_scale, self.power_up_image.get_height() * self.power_up_scale))
 
-    def draw(self, player):
+    def draw(self, player, game_state):
         w = self.screen.get_width()
         h = self.screen.get_height()
 
-        if game.pause_state and not game.upgrade_selection_active:
+        if game_state == "paused":
             self.screen.blit(self.pause_image, (w - 80, h - 90))
         else:
             # Always draw base UI elements

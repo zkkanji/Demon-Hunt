@@ -1,5 +1,6 @@
 import pygame
 import sys
+import os
 import random
 import src.game as game
 from src.constants import MIN_WIDTH, MIN_HEIGHT, FPS, BG_COLOR
@@ -9,26 +10,85 @@ from src.weapons.shotgun import Shotgun
 from src.weapons.sword import Sword
 from src.entities.devil1 import Devil1
 from src.entities.devil2 import Devil2
-from src.game import check_projectile_collision, check_player_enemy_collision, pause_game, advance_wave, get_enemy_spawn_position, check_enemy_enemy_collision, check_player_drop_collision, check_bomb_explosion_collisions, check_sword_projectile_collisions
+from src.game import check_projectile_collision, check_player_enemy_collision, advance_wave, get_enemy_spawn_position, check_enemy_enemy_collision, check_player_drop_collision, check_bomb_explosion_collisions, check_sword_projectile_collisions
 from src.utils.UImanager import UImanager
 from src.utils.upgrade_cards import player_upgrade_card, weapon_upgrade_card, weapon_unlock_card, power_up_card
 from src.utils.power_ups import Invincibility, SpeedBoost, Bomb_PowerUp
 from src.utils.card_selection import initialize_upgrade_selection, update_and_draw_upgrade_cards, handle_card_click, update_upgrade_card_weapons
+from src.utils.rock_placement import RockLandscaping
+from src.menu_stuff.menu_buttons import MenuButton
 
 pygame.init()
 
-screen = pygame.display.set_mode((MIN_WIDTH, MIN_HEIGHT), pygame.RESIZABLE)
+screen = pygame.display.set_mode((MIN_WIDTH, MIN_HEIGHT))
 pygame.display.set_caption("Demon Hunt")
 
 clock = pygame.time.Clock()
 
+TITLE_SCREEN = "title"
+PLAYING = "playing"
+PAUSED = "paused"
+UPGRADE_SELECTION = "upgrade_selection"
+DEATH_SCREEN = "death"
+CREDITS_SCREEN = "credits"
+
+current_state = PLAYING if "--start-game" in sys.argv else TITLE_SCREEN
+
+# MENU BUTTON INITIALIZATION
+title_image = pygame.transform.scale(pygame.image.load("assets/menu/title.png").convert_alpha(), (400, 400)) #Title Card
+play_button = MenuButton("play", MIN_WIDTH // 2 - 100, 270, "start") # Opening Menu Play Button
+quit_button = MenuButton("quit", MIN_WIDTH // 2 - 100, 410, "quit") # Opening Menu Quit Button
+replay_button = MenuButton("replay", MIN_WIDTH // 2 - 100, 300, "replay")
+pause_quit_button = MenuButton("quit", MIN_WIDTH // 2 - 100, 270, "quit")
+credits_button = MenuButton("credits", MIN_WIDTH // 2 - 100, 350, "credits") # Opening Menu Credits Button
+controls_button = MenuButton("controls", MIN_WIDTH // 2 - 100, 350, "controls") # Opening Menu Controls Button
+
+def restart_game():
+    os.execl(sys.executable, sys.executable, *sys.argv, "--start-game")
+
+
+def update_menu_buttons(buttons):
+    mouse_pos = pygame.mouse.get_pos()
+    for button in buttons:
+        button.update(mouse_pos)
+
+
+def draw_menu_buttons(surface, buttons):
+    for button in buttons:
+        button.draw(surface)
+
+
+def layout_menu_buttons():
+    screen_width = screen.get_width()
+    screen_height = screen.get_height()
+    play_button.set_position(
+        screen_width // 2 - play_button.rect.width // 2,
+        int(screen_height * 0.39),
+    )
+    quit_button.set_position(
+        screen_width // 2 - quit_button.rect.width // 2,
+        int(screen_height * 0.59),
+    )
+    replay_button.set_position(
+        screen_width // 2 - replay_button.rect.width // 2,
+        int(screen_height * 0.43),
+    )
+    pause_quit_button.set_position(
+        screen_width // 2 - pause_quit_button.rect.width // 2,
+        int(screen_height * 0.39),
+    )
+
+
+layout_menu_buttons()
+
 player = Player(MIN_WIDTH // 2, MIN_HEIGHT // 2)
+landscaping = RockLandscaping(screen, rock_scale=3)
+landscaping.generate_rocks()
 blaster = Blaster()
 sword = Sword()
 shotgun = Shotgun()
-player.gun_inventory.append(blaster)  
+player.gun_inventory.append(shotgun)  
 player.melee_inventory.append(sword)
-player.gun_inventory.append(shotgun)  # Add shotgun to gun inventory rn for testing
 player.weapon_swap(shotgun)
 player.weapon_swap(sword) 
 player.equip_weapon(player.weapons_inventory["gun"])  # Equip the blaster as the current weapon
@@ -106,33 +166,45 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-        elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-            # Only allow pause toggle if upgrade cards are not being shown
-            if not game.upgrade_selection_active:
-                pause_game()
-        elif event.type == pygame.WINDOWRESIZED:
-            new_w = max(MIN_WIDTH, event.x)
-            new_h = max(MIN_HEIGHT, event.y)
-            if (new_w, new_h) != screen.get_size():
-                screen = pygame.display.set_mode((new_w, new_h), pygame.RESIZABLE)
-                ui_manager.screen = screen
+        elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE and current_state == PLAYING:
+            current_state = PAUSED
+        elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE and current_state == PAUSED:
+            current_state = PLAYING
         elif event.type == pygame.MOUSEBUTTONDOWN:
-                # Handle card clicks during upgrade selection
-                if game.upgrade_selection_active and selected_upgrade_cards:
-                    mouse_pos = pygame.mouse.get_pos()
-                    if handle_card_click(selected_upgrade_cards, mouse_pos):
-                        game.wave_interval_started = True 
-                        game.upgrade_selection_active = False
-                        selected_upgrade_cards = None
-                        game.pause_state = False
-                        game.wave_interval_start_time = pygame.time.get_ticks()
-                        
-                        # Reset spawned counter for next wave
-                        enemies_spawned_this_wave = 0
+                mouse_pos = event.pos
+
+                if current_state == TITLE_SCREEN:
+                    if play_button.clicked(mouse_pos) == "start":
+                        current_state = PLAYING
+                    elif quit_button.clicked(mouse_pos) == "quit":
+                        running = False
+
+                elif current_state == DEATH_SCREEN:
+                    if replay_button.clicked(mouse_pos) == "replay":
+                        restart_game()
+                    elif quit_button.clicked(mouse_pos) == "quit":
+                        running = False
+
+                elif current_state == PAUSED:
+                    if pause_quit_button.clicked(mouse_pos) == "quit":
+                        running = False
+
+                elif current_state == UPGRADE_SELECTION:
+                    if selected_upgrade_cards:
+                        # Handle card clicks during upgrade selection
+                        if handle_card_click(selected_upgrade_cards, mouse_pos):
+                            game.wave_interval_started = True
+                            selected_upgrade_cards = None
+                            current_state = PLAYING
+                            game.wave_interval_start_time = pygame.time.get_ticks()
+
+                            # Reset spawned counter for next wave
+                            enemies_spawned_this_wave = 0
                     
-    if not game.pause_state:        
+    if current_state == PLAYING:
         screen.fill(BG_COLOR)  # Clear the screen with a green color
         pygame.mouse.set_visible(False)
+        landscaping.draw()
         
         # Update wave interval timer if active
         if game.wave_interval_started:
@@ -168,30 +240,30 @@ while running:
         # Check if wave is complete (all enemies spawned and killed)
         if enemies_spawned_this_wave >= game.max_enemies_current_wave and len(enemies) == 0:
             # Show upgrade card selection immediately (before timer)
-            if not game.upgrade_selection_active:
-                # Initialize upgrade card selection overlay
-                card_lists = [
-                    health_upgrade_cards,
-                    gun_dmg_upgrade_cards,
-                    melee_upgrade_cards,
-                    power_up_cards
-                ]
-                #Append appropriate card lists based on current loadout
-                if player.weapons_inventory["gun"].name == "Blaster":
-                    update_upgrade_card_weapons(blaster_magazine_upgrade_cards, player.weapons_inventory["gun"])
-                    card_lists.append(blaster_magazine_upgrade_cards)
-                elif player.weapons_inventory["gun"].name == "Shotgun":
-                    update_upgrade_card_weapons(shotgun_magazine_upgrade_cards, player.weapons_inventory["gun"])
-                    card_lists.append(shotgun_magazine_upgrade_cards)
+            # Initialize upgrade card selection overlay
+            card_lists = [
+                health_upgrade_cards,
+                gun_dmg_upgrade_cards,
+                melee_upgrade_cards,
+                power_up_cards
+            ]
+            # Append appropriate card lists based on current loadout
+            if player.weapons_inventory["gun"].name == "Blaster":
+                update_upgrade_card_weapons(blaster_magazine_upgrade_cards, player.weapons_inventory["gun"])
+                card_lists.append(blaster_magazine_upgrade_cards)
+            elif player.weapons_inventory["gun"].name == "Shotgun":
+                update_upgrade_card_weapons(shotgun_magazine_upgrade_cards, player.weapons_inventory["gun"])
+                card_lists.append(shotgun_magazine_upgrade_cards)
 
-                if player.weapons_inventory["melee"].name == "Sword":
-                    update_upgrade_card_weapons(sword_range_upgrade_cards, player.weapons_inventory["melee"])
-                    card_lists.append(sword_range_upgrade_cards)
-                selected_upgrade_cards = initialize_upgrade_selection(card_lists)
-                game.upgrade_selection_active = True
-                game.pause_state = True
+            if player.weapons_inventory["melee"].name == "Sword":
+                update_upgrade_card_weapons(sword_range_upgrade_cards, player.weapons_inventory["melee"])
+                card_lists.append(sword_range_upgrade_cards)
+            selected_upgrade_cards = initialize_upgrade_selection(card_lists)
+            current_state = UPGRADE_SELECTION
 
         all_sprites.update()  # Update all sprites (includes player with weapon sprites)
+        if not player.is_alive:
+            current_state = DEATH_SCREEN
         player.weapons_inventory["gun"].update()  # Update the blaster (which updates its projectiles)
         player.weapons_inventory["melee"].update()  # Update the sword (which updates its attack animation)
         living_before = list(enemies)
@@ -312,7 +384,7 @@ while running:
         enemy_projectiles.draw(screen)  # Draw orphaned projectiles from dead enemies
         
         # Draw UI text (includes pause image if paused)
-        ui_manager.draw(player)
+        ui_manager.draw(player, current_state)
         pause_snapshot = screen.copy()  # Capture the current screen for pause overlay
 
         mouse_pos = pygame.mouse.get_pos()
@@ -322,25 +394,44 @@ while running:
         elif player.weapon_equipped.weapon_type == "melee":
             reticle_rect = melee_reticle.get_rect(center=mouse_pos)
             screen.blit(melee_reticle, reticle_rect)
-    elif game.pause_state:
+    elif current_state == PAUSED:
         # Draw pause screen overlay
         pygame.mouse.set_visible(True)
         snapshot = pause_snapshot if pause_snapshot.get_size() == screen.get_size() else pygame.transform.scale(pause_snapshot, screen.get_size())
         screen.blit(snapshot, (0, 0))  # Show the captured game screen when paused
         overlay = pygame.Surface(screen.get_size()); overlay.set_alpha(62); overlay.fill((0, 0, 0))
         screen.blit(overlay, (0, 0)) 
-        ui_manager.draw(player)
-        
-        # Draw upgrade cards if selection is active
-        if game.upgrade_selection_active and selected_upgrade_cards:
+        ui_manager.draw(player, current_state)
+        update_menu_buttons([pause_quit_button])
+        draw_menu_buttons(screen, [pause_quit_button])
+
+    elif current_state == UPGRADE_SELECTION:
+        pygame.mouse.set_visible(True)
+        snapshot = pause_snapshot if pause_snapshot.get_size() == screen.get_size() else pygame.transform.scale(pause_snapshot, screen.get_size())
+        screen.blit(snapshot, (0, 0))
+        overlay = pygame.Surface(screen.get_size())
+        overlay.set_alpha(62)
+        overlay.fill((0, 0, 0))
+        screen.blit(overlay, (0, 0))
+        if selected_upgrade_cards:
             mouse_pos = pygame.mouse.get_pos()
             update_and_draw_upgrade_cards(screen, selected_upgrade_cards, mouse_pos)
-        
 
-    if not game.pause_state:
-        pygame.display.flip()  # Update the display
-    else:
-        pygame.display.flip()  # Still display when paused
+    elif current_state == TITLE_SCREEN:
+        pygame.mouse.set_visible(True)
+        screen.fill(BG_COLOR)
+        title_rect = title_image.get_rect(center=(screen.get_width() // 2, 150))
+        screen.blit(title_image, title_rect)
+        update_menu_buttons([play_button, quit_button])
+        draw_menu_buttons(screen, [play_button, quit_button])
+
+    elif current_state == DEATH_SCREEN:
+        pygame.mouse.set_visible(True)
+        screen.fill(BG_COLOR)
+        update_menu_buttons([replay_button, quit_button])
+        draw_menu_buttons(screen, [replay_button, quit_button])
+
+    pygame.display.flip()
     clock.tick(FPS)  # Maintain the frame rate
 
 pygame.quit()

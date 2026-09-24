@@ -16,7 +16,7 @@ class Devil2(Enemy):
                         knockback_damage=5,
                         movement_speed=1.5,
                         scale_factor=2.5,
-                        attack_cooldown=800,
+                        attack_cooldown=1000,
                         enemy_type="ranged devil")
 
         self.shoot_radius = 250

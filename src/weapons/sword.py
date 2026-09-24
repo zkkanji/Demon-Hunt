@@ -8,7 +8,7 @@ from src.utils.progressbar import ProgressBar
 class Sword(MeleeBase):
     
     def __init__(self):
-        super().__init__(name = "Sword", damage = 20, is_automatic = False, melee_range = 140, attack_cooldown = 300)
+        super().__init__(name = "Sword", damage = 20, is_automatic = False, melee_range = 170, attack_cooldown = 300)
 
         # Load sword sweep animation frames
         sweep_scale = 5.5

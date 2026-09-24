@@ -7,6 +7,7 @@ class Player(BaseEntity):
     def __init__(self, x, y, direction=None, max_health=100, scale_factor=3):
         super().__init__(x, y, max_health)
 
+        self.mana = 100
         self.direction = direction  # Track the player's facing direction
         self.weapons_inventory = {
             "gun": None,  # Placeholder for the player's gun

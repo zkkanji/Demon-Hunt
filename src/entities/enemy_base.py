@@ -72,7 +72,7 @@ class Enemy(BaseEntity, ABC):
     def wave_update(self):
         if game.wave_number > self.last_wave_processed and game.wave_number > 1:
             self.last_wave_processed = game.wave_number
-            health_increment = (game.wave_number-1) * 17
+            health_increment = (game.wave_number-1) * 10
             attack_increment = (game.wave_number-1) * 3
             knockback_increment = (game.wave_number-1) * 2 
             self.max_health += health_increment
