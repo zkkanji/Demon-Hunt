@@ -1,5 +1,6 @@
 import pygame
 import random
+from src.utils.sprite_utils import get_sprite_bounds, make_shadow
 
 class RockLandscaping:
 
@@ -8,11 +9,20 @@ class RockLandscaping:
             self.image = image
             self.x = x
             self.y = y
-            self.rect = self.image.get_rect(topleft=(x, y))
+            self.image_rect = self.image.get_rect(topleft=(x, y))
+            bounds = get_sprite_bounds(self.image)
+            self.rect = bounds.move(self.image_rect.topleft)
+            self.shadow_image_raw = pygame.image.load("assets/misc/entity-shadow.png").convert_alpha()
+            self.shadow = make_shadow(self.shadow_image_raw, self.image.get_width())
+            self.shadow.set_alpha(70)  
 
         def draw(self, surface):
-            surface.blit(self.image, self.rect)
-
+            shadow_rect = self.shadow.get_rect(
+                midbottom=(self.rect.centerx, self.rect.bottom + 17)
+            )
+            surface.blit(self.shadow, shadow_rect)
+            surface.blit(self.image, self.image_rect)
+            
     def __init__(self, screen, rock_scale, avoid_rect=None):
         self.screen = screen
         display_info = pygame.display.Info()
@@ -72,5 +82,3 @@ class RockLandscaping:
     def draw(self):
         for rock in self.rocks:
             rock.draw(self.screen)
-
-    

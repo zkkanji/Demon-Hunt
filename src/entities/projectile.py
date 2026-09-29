@@ -4,12 +4,13 @@ from src.utils.sprite_utils import get_sprite_bounds
 
 class Projectile(BaseEntity):
 
-    def __init__(self, x, y, velocity_x, velocity_y, damage, sprite_image=None):
+    def __init__(self, x, y, velocity_x, velocity_y, damage, sprite_image=None, is_critical=False):
         super().__init__(x, y, max_health=None)
 
         self.velocity_x = velocity_x
         self.velocity_y = velocity_y
         self.damage = damage
+        self.is_critical = is_critical
         # Override the image and rect for the projectile (won't be necesary once sprites are designed)
         if sprite_image:
             self.image = sprite_image

@@ -5,7 +5,7 @@ from src.entities.projectile import Projectile
 class Blaster(GunBase):
     
     def __init__(self):
-        super().__init__(name = "Blaster", damage = 10, is_automatic = False, ammo_limit=15, reload_time=800, attack_cooldown=225)
+        super().__init__(name = "Blaster", damage = 10, is_automatic = False, ammo_limit=15, reload_time=800, attack_cooldown=225, crit_mult=1.5)
         self.projectile_velocity = 10
         projectile_scale = 1.5
         self.projectiles = pygame.sprite.Group()  # Group to manage active projectiles
@@ -31,7 +31,16 @@ class Blaster(GunBase):
 
         self.is_shooting = True
         self.time_since_last_shot = pygame.time.get_ticks()
-        projectile = Projectile(px+(2*vx), py+(2*vy), vx, vy, self.damage, sprite_image = self.projectile_image)
+        is_critical = self.roll_critical_hit()
+        projectile_damage = round(self.damage * self.crit_multiplier) if is_critical else self.damage
+        projectile = Projectile(
+            px+(2*vx), 
+            py+(2*vy), 
+            vx, 
+            vy, 
+            projectile_damage, 
+            sprite_image = self.projectile_image, 
+            is_critical=is_critical)
         self.projectiles.add(projectile)
         return True  # Attack succeeded
 

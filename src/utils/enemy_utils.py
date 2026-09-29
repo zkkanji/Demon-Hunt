@@ -3,13 +3,16 @@ from pygame.sprite import Sprite
 from src.utils.sprite_utils import make_shadow
 
 class DamageNumber:
-    def __init__(self, pos, amount):
+    def __init__(self, pos, amount, is_critical=False):
         self.x, self.y = pos
         self.amount = amount
+        self.is_critical = is_critical
         self.fonts = [pygame.font.Font(f"assets/fonts/smallest-pixel-7/smallest_pixel-7.ttf", i)
             for i in range(2, 25, 2)
         ]
-        self.text = self.fonts[0].render(str(self.amount), True, (227, 229, 82))
+        self.regular_text = self.fonts[0].render(str(self.amount), True, (227, 229, 82))
+        self.crit_text = self.fonts[0].render(str(self.amount), True, (251, 50, 50))    
+        self.text = self.crit_text if self.is_critical else self.regular_text
         self.spawn_time = pygame.time.get_ticks()  # Record when the damage number was created
         self.lifetime = 600  #ms
         self.font_iterator = 0
@@ -20,7 +23,8 @@ class DamageNumber:
     def update(self):
         if self.font_iterator < len(self.fonts):
             self.y -= 0.8
-            self.text = self.fonts[self.font_iterator].render(str(self.amount), True, (227, 229, 82))
+            text_color = (251, 50, 50) if self.is_critical else (227, 229, 82)
+            self.text = self.fonts[self.font_iterator].render(str(self.amount), True, text_color)
             self.font_iterator += 1
 
     def draw(self, screen):

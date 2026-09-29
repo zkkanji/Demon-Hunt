@@ -39,12 +39,12 @@ class Enemy(BaseEntity, ABC):
     def primary_attack(self, player):
         pass
 
-    def take_damage(self, damage_amount):
+    def take_damage(self, damage_amount, is_critical=False):
         self.current_health -= damage_amount
         dnx, dny = self.rect.topright
         dnx += 10
         dny += 10
-        self.damage_numbers.append(DamageNumber((dnx, dny), damage_amount))
+        self.damage_numbers.append(DamageNumber((dnx, dny), damage_amount, is_critical))
         if self.current_health <= 0:
             self.is_dying = True
         else:

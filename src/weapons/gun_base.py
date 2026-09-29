@@ -10,9 +10,11 @@ class GunBase(BaseWeapon):
                 ammo_limit,
                 reload_time,
                 attack_cooldown,
-                weapon_type = "gun"):
+                crit_mult=1.0,
+                weapon_type = "gun",
+                ):
         
-        super().__init__(name, damage, is_automatic, weapon_type)
+        super().__init__(name, damage, is_automatic, crit_mult, weapon_type)
 
         self.ammo_limit = ammo_limit
         self.reload_time = reload_time

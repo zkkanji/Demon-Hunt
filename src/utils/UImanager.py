@@ -57,7 +57,7 @@ class UImanager:
         self.power_up_scale = 1.75
         self.power_up_image = None
 
-    def update(self, player, gun):
+    def update(self, player):
         self.healthbar.max_value = player.max_health
         self.healthbar.update(player.current_health)
         self.ammo_text = self.font_numbers.render(f"{player.weapons_inventory['gun'].ammo}/{player.ammo}", True, UI_COLOR)

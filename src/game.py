@@ -48,7 +48,7 @@ def check_projectile_collision(projectiles, enemies):
                 was_alive = enemy.current_health > 0
                 
                 # Apply damage to enemy
-                enemy.take_damage(projectile.damage)
+                enemy.take_damage(projectile.damage, projectile.is_critical)
                 
                 # Award bonus points for kill
                 if was_alive and enemy.current_health <= 0:

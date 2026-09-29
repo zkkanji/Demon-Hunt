@@ -6,7 +6,7 @@ from src.entities.projectile import Projectile
 class Shotgun(GunBase):
 
     def __init__(self):
-        super().__init__(name = "Shotgun", damage = 15, is_automatic = False, ammo_limit=15, reload_time=1200, attack_cooldown=800)
+        super().__init__(name = "Shotgun", damage = 15, is_automatic = False, ammo_limit=15, reload_time=1200, attack_cooldown=800, crit_mult=1.5)
         self.projectile_velocity = 12
         projectile_scale = 1.5
         self.projectile_spread_angle = 7.5  # degrees
@@ -38,7 +38,17 @@ class Shotgun(GunBase):
             rad_angle = math.radians(angle_offset)
             rotated_vx = vx * math.cos(rad_angle) - vy * math.sin(rad_angle)
             rotated_vy = vx * math.sin(rad_angle) + vy * math.cos(rad_angle)
-            projectile = Projectile(px+(2*rotated_vx), py+(2*rotated_vy), rotated_vx, rotated_vy, self.damage, sprite_image = self.projectile_image)
+            is_critical = self.roll_critical_hit()
+            projectile_damage = round(self.damage * self.crit_multiplier) if is_critical else self.damage
+            projectile = Projectile(
+                px+(2*rotated_vx),
+                py+(2*rotated_vy),
+                rotated_vx,
+                rotated_vy,
+                projectile_damage,
+                sprite_image=self.projectile_image,
+                is_critical=is_critical,
+            )
             self.projectiles.add(projectile)
         return True  # Attack succeeded
 

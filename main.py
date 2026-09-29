@@ -17,6 +17,7 @@ from src.utils.power_ups import Invincibility, SpeedBoost, Bomb_PowerUp
 from src.utils.card_selection import initialize_upgrade_selection, update_and_draw_upgrade_cards, handle_card_click, update_upgrade_card_weapons
 from src.utils.rock_placement import RockLandscaping
 from src.menu_stuff.menu_buttons import MenuButton
+from src.menu_stuff.menu_text import MenuText
 
 pygame.init()
 
@@ -31,6 +32,7 @@ PAUSED = "paused"
 UPGRADE_SELECTION = "upgrade_selection"
 DEATH_SCREEN = "death"
 CREDITS_SCREEN = "credits"
+CONTROLS_SCREEN = "controls"
 
 current_state = PLAYING if "--start-game" in sys.argv else TITLE_SCREEN
 
@@ -39,9 +41,13 @@ title_image = pygame.transform.scale(pygame.image.load("assets/menu/title.png").
 play_button = MenuButton("play", MIN_WIDTH // 2 - 100, 270, "start") # Opening Menu Play Button
 quit_button = MenuButton("quit", MIN_WIDTH // 2 - 100, 410, "quit") # Opening Menu Quit Button
 replay_button = MenuButton("replay", MIN_WIDTH // 2 - 100, 300, "replay")
+death_quit_button = MenuButton("quit", MIN_WIDTH // 2 - 100, 400, "quit") # Death Screen Quit Button
 pause_quit_button = MenuButton("quit", MIN_WIDTH // 2 - 100, 270, "quit")
 credits_button = MenuButton("credits", MIN_WIDTH // 2 - 100, 350, "credits") # Opening Menu Credits Button
 controls_button = MenuButton("controls", MIN_WIDTH // 2 - 100, 350, "controls") # Opening Menu Controls Button
+back_button = MenuButton("back", MIN_WIDTH - 80, MIN_HEIGHT - 80, "back", scale=2) # Back Button for Credits and Controls Screens
+
+menu_text = MenuText(screen)  # Initialize MenuText with the screen
 
 def restart_game():
     os.execl(sys.executable, sys.executable, *sys.argv, "--start-game")
@@ -67,15 +73,31 @@ def layout_menu_buttons():
     )
     quit_button.set_position(
         screen_width // 2 - quit_button.rect.width // 2,
-        int(screen_height * 0.59),
+        int(screen_height * 0.69),
     )
     replay_button.set_position(
         screen_width // 2 - replay_button.rect.width // 2,
-        int(screen_height * 0.43),
+        int(screen_height * 0.35),
     )
     pause_quit_button.set_position(
         screen_width // 2 - pause_quit_button.rect.width // 2,
         int(screen_height * 0.39),
+    )
+    credits_button.set_position(
+        screen_width // 2 - credits_button.rect.width // 2,
+        int(screen_height * 0.49),
+    )
+    controls_button.set_position(
+        screen_width // 2 - controls_button.rect.width // 2,
+        int(screen_height * 0.59),
+    )
+    back_button.set_position(
+        screen_width - back_button.rect.width - 24,
+        screen_height - back_button.rect.height - 24,
+    )
+    death_quit_button.set_position(
+        screen_width // 2 - death_quit_button.rect.width // 2,
+        int(screen_height * 0.5),
     )
 
 
@@ -87,9 +109,9 @@ landscaping.generate_rocks()
 blaster = Blaster()
 sword = Sword()
 shotgun = Shotgun()
-player.gun_inventory.append(shotgun)  
+player.gun_inventory.append(blaster)  
 player.melee_inventory.append(sword)
-player.weapon_swap(shotgun)
+player.weapon_swap(blaster)
 player.weapon_swap(sword) 
 player.equip_weapon(player.weapons_inventory["gun"])  # Equip the blaster as the current weapon
 
@@ -97,7 +119,9 @@ ui_manager = UImanager(screen, player)
 
 # Load reticles for custom cursor
 gun_reticle = pygame.image.load("assets/misc/gun-reticle.png")
+gun_reticle = pygame.transform.scale(gun_reticle, (50, 50))
 melee_reticle = pygame.image.load("assets/misc/melee-reticle.png")
+melee_reticle = pygame.transform.scale(melee_reticle, (50, 50))
 pause_snapshot = None
 
 all_sprites = pygame.sprite.Group(player)
@@ -178,11 +202,19 @@ while running:
                         current_state = PLAYING
                     elif quit_button.clicked(mouse_pos) == "quit":
                         running = False
+                    elif credits_button.clicked(mouse_pos) == "credits":
+                        current_state = CREDITS_SCREEN
+                    elif controls_button.clicked(mouse_pos) == "controls":
+                        current_state = CONTROLS_SCREEN
+
+                elif current_state in (CREDITS_SCREEN, CONTROLS_SCREEN):
+                    if back_button.clicked(mouse_pos) == "back":
+                        current_state = TITLE_SCREEN
 
                 elif current_state == DEATH_SCREEN:
                     if replay_button.clicked(mouse_pos) == "replay":
                         restart_game()
-                    elif quit_button.clicked(mouse_pos) == "quit":
+                    elif death_quit_button.clicked(mouse_pos) == "quit":
                         running = False
 
                 elif current_state == PAUSED:
@@ -292,7 +324,7 @@ while running:
         for gun in player.gun_inventory:
             gun.check_reload_completion()
 
-        ui_manager.update(player, blaster)  # Update UI elements with current player and gun state
+        ui_manager.update(player)  # Update UI elements with current player and gun state
 
         # Update melee cooldown bar position and value
         cooldown_remaining = max(0, sword.attack_cooldown - (pygame.time.get_ticks() - sword.time_from_last_attack))
@@ -422,14 +454,22 @@ while running:
         screen.fill(BG_COLOR)
         title_rect = title_image.get_rect(center=(screen.get_width() // 2, 150))
         screen.blit(title_image, title_rect)
-        update_menu_buttons([play_button, quit_button])
-        draw_menu_buttons(screen, [play_button, quit_button])
+        title_buttons = [play_button, quit_button, credits_button, controls_button]
+        update_menu_buttons(title_buttons)
+        draw_menu_buttons(screen, title_buttons)
+
+    elif current_state in (CREDITS_SCREEN, CONTROLS_SCREEN):
+        pygame.mouse.set_visible(True)
+        screen.fill(BG_COLOR)
+        menu_text.draw(current_state)
+        update_menu_buttons([back_button])
+        draw_menu_buttons(screen, [back_button])
 
     elif current_state == DEATH_SCREEN:
         pygame.mouse.set_visible(True)
         screen.fill(BG_COLOR)
-        update_menu_buttons([replay_button, quit_button])
-        draw_menu_buttons(screen, [replay_button, quit_button])
+        update_menu_buttons([replay_button, death_quit_button])
+        draw_menu_buttons(screen, [replay_button, death_quit_button])
 
     pygame.display.flip()
     clock.tick(FPS)  # Maintain the frame rate

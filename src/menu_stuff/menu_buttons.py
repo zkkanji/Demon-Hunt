@@ -2,7 +2,7 @@ import pygame
 
 class MenuButton:
 
-    def __init__(self, image_path, x, y, action, scale=4):
+    def __init__(self, image_path, x, y, action, scale=3):
         self.idle_image_raw = pygame.image.load(f"assets/menu/buttons/{image_path}1.png").convert_alpha()
         self.hover_image_raw = pygame.image.load(f"assets/menu/buttons/{image_path}2.png").convert_alpha()
         self.action = action
