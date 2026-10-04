@@ -12,7 +12,7 @@ from src.entities.devil1 import Devil1
 from src.entities.devil2 import Devil2
 from src.game import check_projectile_collision, check_player_enemy_collision, advance_wave, get_enemy_spawn_position, check_enemy_enemy_collision, check_player_drop_collision, check_bomb_explosion_collisions, check_sword_projectile_collisions
 from src.utils.UImanager import UImanager
-from src.utils.upgrade_cards import player_upgrade_card, weapon_upgrade_card, weapon_unlock_card, power_up_card
+from src.utils.upgrade_cards import player_upgrade_card, weapon_upgrade_card, weapon_unlock_card, power_up_card, weapon_inventory_upgrade_card
 from src.utils.power_ups import Invincibility, SpeedBoost, Bomb_PowerUp
 from src.utils.card_selection import initialize_upgrade_selection, update_and_draw_upgrade_cards, handle_card_click, update_upgrade_card_weapons
 from src.utils.rock_placement import RockLandscaping
@@ -171,6 +171,11 @@ range_up_10 = weapon_upgrade_card("Increase Current Melee Range by 10", 10, f"as
 range_up_15 = weapon_upgrade_card("Increase Current Melee Range by 15", 15, f"assets/upgrade-cards/melee-radius-upgrade/radius+15", player.weapons_inventory["melee"], "melee_range")
 sword_range_upgrade_cards = [range_up_5, range_up_10, range_up_15]
 
+# Crit Upgrade Cards
+weapon_crit_chance_up_5 = weapon_inventory_upgrade_card("Increase Current Inventory Weapons Critical Chance by 5%", 5, f"assets/upgrade-cards/crit-cards/chance+5", player, "crit_chance")
+weapon_mult_up_0_5 =  weapon_inventory_upgrade_card("Increase Current Inventory Weapons Critical Multiplier by 0.5x", 1.5, f"assets/upgrade-cards/crit-cards/mult+0.5", player, "crit_multiplier")
+crit_upgrade_cards = [weapon_crit_chance_up_5, weapon_mult_up_0_5]
+
 # Power-up cards
 invincibility_powerup = Invincibility(player, 10000)
 speed_boost_powerup = SpeedBoost(player, 10000)
@@ -277,6 +282,7 @@ while running:
                 health_upgrade_cards,
                 gun_dmg_upgrade_cards,
                 melee_upgrade_cards,
+                crit_upgrade_cards,
                 power_up_cards
             ]
             # Append appropriate card lists based on current loadout

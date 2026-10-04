@@ -74,7 +74,7 @@ class player_upgrade_card(card):
         setattr(self.player, self.attribute_name, self.effecting_attribute_value + self.upgrade_amount)
         self.effecting_attribute_value = getattr(self.player, self.attribute_name)
         if self.attribute_name == "max_health":
-            self.player.current_health += self.upgrade_amount  
+            self.player.current_health += self.upgrade_amount   
 
 # Weapon attribute upgrade card class
 class weapon_upgrade_card(card): 
@@ -95,6 +95,26 @@ class weapon_upgrade_card(card):
     def update_weapon(self, weapon):
         self.weapon = weapon
 
+class weapon_inventory_upgrade_card(card): #to be used for weapon crit multiplier and chance upgrades
+
+    def __init__(self, name, upgrade_amount, image_folder, player, attribute_name):
+        super().__init__(name, image_folder)
+        self.upgrade_amount = upgrade_amount
+        self.gun = player.weapons_inventory["gun"]
+        self.melee = player.weapons_inventory["melee"]
+        self.attribute_name = attribute_name
+        self.gun_effecting_attribute_value = getattr(self.gun, self.attribute_name, None)
+        self.melee_effecting_attribute_value = getattr(self.melee, self.attribute_name, None)
+        self.card_type = "upgrade"
+
+    def apply_upgrade(self):
+        self.gun_effecting_attribute_value = getattr(self.gun, self.attribute_name)
+        self.melee_effecting_attribute_value = getattr(self.melee, self.attribute_name)
+        setattr(self.gun, self.attribute_name, self.gun_effecting_attribute_value + self.upgrade_amount)
+        setattr(self.melee, self.attribute_name, self.melee_effecting_attribute_value + self.upgrade_amount)
+        self.gun_effecting_attribute_value = getattr(self.gun, self.attribute_name)
+        self.melee_effecting_attribute_value = getattr(self.melee, self.attribute_name)
+        
 # Weapon unlocking card class
 class weapon_unlock_card(card):
     def __init__(self, name, player, weapon_to_unlock, image_folder):

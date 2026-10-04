@@ -8,10 +8,10 @@ from src.utils.progressbar import ProgressBar
 class Sword(MeleeBase):
     
     def __init__(self):
-        super().__init__(name = "Sword", damage = 20, is_automatic = False, melee_range = 170, attack_cooldown = 300)
-
+        super().__init__(name = "Sword", damage = 20, is_automatic = False, melee_range = 170 , attack_cooldown = 300, crit_mult = 2.0)
+        #melee range should be 170
         # Load sword sweep animation frames
-        sweep_scale = 5.5
+        sweep_scale = 5.7
         self.sweep_frames = [
             pygame.transform.scale(pygame.image.load(f"assets/misc/sword-sweep/sword-sweep{i}.png"), 
                                  (int(pygame.image.load(f"assets/misc/sword-sweep/sword-sweep{i}.png").get_width() * sweep_scale),
@@ -49,7 +49,19 @@ class Sword(MeleeBase):
         vy = dy * velocity
         
         # Create the sweep projectile with rotation angle at spawn position
-        sweep = SwordSweep(spawn_x, spawn_y, vx, vy, self.damage, self.attack_cooldown, self.sweep_frames, angle=angle)
+        is_critical = self.roll_critical_hit()
+        sweep_damage = round(self.damage * self.crit_multiplier) if is_critical else self.damage
+        sweep = SwordSweep(
+            spawn_x, 
+            spawn_y, 
+            vx, 
+            vy, 
+            sweep_damage,
+            self.attack_cooldown, 
+            self.sweep_frames, 
+            angle=angle,
+            is_critical=is_critical
+        )
         self.sweeps.add(sweep)
         
         # Reset attack cooldown timer

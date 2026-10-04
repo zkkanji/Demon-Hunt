@@ -6,8 +6,8 @@ from src.utils.sprite_utils import get_sprite_bounds
 
 class SwordSweep(Projectile):
 
-    def __init__(self, x, y, velocity_x, velocity_y, damage, attack_duration, attack_frames, angle=0):
-        super().__init__(x, y, velocity_x, velocity_y, damage)
+    def __init__(self, x, y, velocity_x, velocity_y, damage, attack_duration, attack_frames, angle=0, is_critical=False):
+        super().__init__(x, y, velocity_x, velocity_y, damage, is_critical=is_critical)
 
         self.attack_duration = attack_duration  # Total duration of the attack in milliseconds
         self.attack_frames_original = attack_frames  # List of frames for the sword sweep animation (unrotated)
