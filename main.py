@@ -38,6 +38,7 @@ current_state = PLAYING if "--start-game" in sys.argv else TITLE_SCREEN
 
 # MENU BUTTON INITIALIZATION
 title_image = pygame.transform.scale(pygame.image.load("assets/menu/title.png").convert_alpha(), (400, 400)) #Title Card
+gameover_image = pygame.transform.scale(pygame.image.load("assets/menu/gameover.png").convert_alpha(), (400, 400)) #Game Over Card
 play_button = MenuButton("play", MIN_WIDTH // 2 - 100, 270, "start") # Opening Menu Play Button
 quit_button = MenuButton("quit", MIN_WIDTH // 2 - 100, 410, "quit") # Opening Menu Quit Button
 replay_button = MenuButton("replay", MIN_WIDTH // 2 - 100, 300, "replay")
@@ -110,8 +111,9 @@ blaster = Blaster()
 sword = Sword()
 shotgun = Shotgun()
 player.gun_inventory.append(blaster)  
+player.gun_inventory.append(shotgun)
 player.melee_inventory.append(sword)
-player.weapon_swap(blaster)
+player.weapon_swap(shotgun) 
 player.weapon_swap(sword) 
 player.equip_weapon(player.weapons_inventory["gun"])  # Equip the blaster as the current weapon
 
@@ -474,6 +476,8 @@ while running:
     elif current_state == DEATH_SCREEN:
         pygame.mouse.set_visible(True)
         screen.fill(BG_COLOR)
+        gameover_rect = gameover_image.get_rect(center=(screen.get_width() // 2, 175))
+        screen.blit(gameover_image, gameover_rect)
         update_menu_buttons([replay_button, death_quit_button])
         draw_menu_buttons(screen, [replay_button, death_quit_button])
 
