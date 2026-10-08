@@ -152,6 +152,8 @@ class Devil1(Enemy):
                                     ymargin=1
                                     )
 
+        self.color = (213, 38, 38)
+
     def primary_attack(self, player):
         """Attack the player with a melee sweep if in range and cooldown is ready."""
         dx = player.x - self.x

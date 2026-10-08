@@ -27,6 +27,7 @@ class Player(BaseEntity):
         self.is_alive = True
         self.is_dying = False
         self.death_timer = 0
+        self.color = (29, 116, 205)
 
         #Player Design/Animation frames (Blaster or Sword)
         #Blaster Raw Frames (Left and Right)

@@ -158,6 +158,8 @@ class Devil2(Enemy):
                                     ymargin=1
                                     )
 
+        self.color = (45, 5, 70)
+
     def primary_attack(self, player):
         dx = player.x - self.x
         dy = player.y - self.y

@@ -18,6 +18,7 @@ from src.utils.card_selection import initialize_upgrade_selection, update_and_dr
 from src.utils.rock_placement import RockLandscaping
 from src.menu_stuff.menu_buttons import MenuButton
 from src.menu_stuff.menu_text import MenuText
+from src.utils.particles import create_hit_burst
 
 pygame.init()
 
@@ -131,6 +132,7 @@ enemies = pygame.sprite.Group()
 enemy_drops = pygame.sprite.Group()
 enemy_projectiles = pygame.sprite.Group()  # projectiles that outlive their enemy
 bombs = pygame.sprite.Group()
+particles = pygame.sprite.Group()
 
 # Initialize first wave
 advance_wave()
@@ -327,6 +329,7 @@ while running:
             bombs.add(bomb)
         bomb_powerup.pending_bombs.clear()
         bombs.update()
+        particles.update()  # Update all active particles
         
         # Check if gun reload should complete for every gun in inventory
         for gun in player.gun_inventory:
@@ -351,14 +354,22 @@ while running:
             reload_remaining = 0
 
         # Collision detection
-        check_projectile_collision(player.weapons_inventory["gun"].projectiles, enemies)
-        check_projectile_collision(sword.sweeps, enemies)
-        check_player_enemy_collision(player, enemies)
+        check_projectile_collision(
+            player.weapons_inventory["gun"].projectiles, 
+            enemies,
+            particles
+            )
+        check_projectile_collision(
+            sword.sweeps, 
+            enemies,
+            particles
+            )
+        check_player_enemy_collision(player, enemies, particles)
         check_enemy_enemy_collision(enemies)
         for drop in enemy_drops:
             if check_player_drop_collision(player, drop):
                 drop.collect()
-        check_bomb_explosion_collisions(bombs, enemies, player)
+        check_bomb_explosion_collisions(bombs, enemies, player, particles)
 
         # Check enemy sweeps collision with player
         for enemy in enemies:
@@ -370,6 +381,12 @@ while running:
                     if enemy_sweep_collision_rect.colliderect(player_collision_rect):
                         if not player.is_hit:
                             player.take_damage(enemy.attack_damage)
+                            create_hit_burst(
+                                particles,
+                                player.rect.center,
+                                color=player.color,
+                                count=14,
+                            )
                         sweep.kill()  # Remove sweep after hitting player
 
         # Parry: sword sweeps destroy enemy projectiles before player collision is checked
@@ -388,12 +405,24 @@ while running:
                 if proj_rect.colliderect(player_collision_rect):
                     if not player.is_hit:
                         player.take_damage(enemy.attack_damage)
+                        create_hit_burst(
+                            particles,
+                            player.rect.center,
+                            color=player.color,
+                            count=14,
+                        )
                     proj.kill()
         for proj in list(enemy_projectiles):
             proj_rect = getattr(proj, 'collision_rect', proj.rect)
             if proj_rect.colliderect(player_collision_rect):
                 if not player.is_hit:
                     player.take_damage(proj.damage)
+                    create_hit_burst(
+                        particles,
+                        player.rect.center,
+                        color=player.color,
+                        count=14,
+                    )
                 proj.kill()
 
         # Drawing of all things on screen
@@ -422,6 +451,8 @@ while running:
         player.weapons_inventory["gun"].projectiles.draw(screen)  # Draw all gun projectiles
         player.weapons_inventory["melee"].sweeps.draw(screen)  # Draw all sword sweep projectiles
         enemy_projectiles.draw(screen)  # Draw orphaned projectiles from dead enemies
+
+        particles.draw(screen)  # Draw all active particles
         
         # Draw UI text (includes pause image if paused)
         ui_manager.draw(player, current_state)
@@ -434,6 +465,7 @@ while running:
         elif player.weapon_equipped.weapon_type == "melee":
             reticle_rect = melee_reticle.get_rect(center=mouse_pos)
             screen.blit(melee_reticle, reticle_rect)
+        
     elif current_state == PAUSED:
         # Draw pause screen overlay
         pygame.mouse.set_visible(True)

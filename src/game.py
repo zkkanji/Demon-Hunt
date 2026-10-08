@@ -1,5 +1,6 @@
 import pygame
 import random
+from src.utils.particles import create_hit_burst
 
 game_score = 0
 wave_number = 0
@@ -28,7 +29,7 @@ def get_enemy_spawn_position():
     return (x, y)
 
 
-def check_projectile_collision(projectiles, enemies):
+def check_projectile_collision(projectiles, enemies, particle_group):
     global game_score
     
     for projectile in projectiles:
@@ -49,6 +50,12 @@ def check_projectile_collision(projectiles, enemies):
                 
                 # Apply damage to enemy
                 enemy.take_damage(projectile.damage, projectile.is_critical)
+
+                create_hit_burst(
+                    particle_group,
+                    enemy.rect.center,
+                    enemy.color if hasattr(enemy, 'color') else (255, 190, 60)
+                )
                 
                 # Award bonus points for kill
                 if was_alive and enemy.current_health <= 0:
@@ -58,7 +65,7 @@ def check_projectile_collision(projectiles, enemies):
                 break  # Only hit one enemy per projectile
 
 
-def check_player_enemy_collision(player, enemies):
+def check_player_enemy_collision(player, enemies, particle_group):
     # Use collision_rect if available, otherwise use rect
     player_collision_rect = getattr(player, 'collision_rect', player.rect)
     
@@ -71,6 +78,12 @@ def check_player_enemy_collision(player, enemies):
             if not player.is_hit:
                 # Apply damage to player
                 player.take_damage(enemy.attack_damage)
+                create_hit_burst(
+                    particle_group,
+                    player.rect.center,
+                    player.color,
+                    count=14,
+                )
             
             # Apply knockback to enemy (opposite direction of movement)
             knockback_x = -enemy.direction[0] * enemy.knockback_velocity
@@ -118,7 +131,7 @@ def check_player_drop_collision(player, drop):
     player_collision_rect = getattr(player, 'collision_rect', player.rect)
     return player_collision_rect.colliderect(drop.rect)
 
-def check_bomb_explosion_collisions(bombs, enemies, player):
+def check_bomb_explosion_collisions(bombs, enemies, player, particle_group):
     for bomb in bombs:
         if bomb.state != "exploding":
             continue
@@ -129,12 +142,24 @@ def check_bomb_explosion_collisions(bombs, enemies, player):
             enemy_collision_rect = getattr(enemy, 'collision_rect', enemy.rect)
             if bomb.rect.colliderect(enemy_collision_rect):
                 enemy.take_damage(bomb.damage)
+                create_hit_burst(
+                    particle_group,
+                    enemy.rect.center,
+                    enemy.color,
+                    count=20,
+                )
                 bomb.damaged_entities.add(enemy)
 
         if player not in bomb.damaged_entities:
             player_collision_rect = getattr(player, 'collision_rect', player.rect)
             if bomb.rect.colliderect(player_collision_rect):
                 player.take_damage(bomb.damage)
+                create_hit_burst(
+                    particle_group,
+                    player.rect.center,
+                    player.color,
+                    count=20,
+                )
                 bomb.damaged_entities.add(player)
 
 def check_sword_projectile_collisions(sword_projectiles, enemy_projectiles):
@@ -171,5 +196,4 @@ def triple_card_selector(cards):
             cards.remove(cards[index])  # Remove selected card to avoid duplicates in triple
         return card_triple
     return cards   
-
 
