@@ -1,17 +1,18 @@
 import pygame
 import math
+import src.game as game
 from .enemy_base import Enemy
 from src.utils.progressbar import ProgressBar
 from .sword_sweep import SwordSweep
-from src.utils.sprite_utils import get_sprite_bounds
+from src.utils.sprite_utils import get_sprite_bounds, make_shadow
 from src.constants import FPS
 
-class Devil(Enemy):
+class Devil1(Enemy):
     
     def __init__(self, x, y):
-        super().__init__(x, y, attack_duration=400, max_health=50, attack_damage=7, knockback_damage=4, movement_speed=1.5, scale_factor=2.5, attack_cooldown=900)
+        super().__init__(x, y, attack_duration=400, max_health=30, attack_damage=7, knockback_damage=4, movement_speed=1.5, scale_factor=2.5, attack_cooldown=900, enemy_type="devil")
 
-        self.attack_radius = 175
+        self.attack_radius = 155
         self.melee_sweeps = pygame.sprite.Group()  # Group to manage active melee sweeps
         #idle frames
         left_idle_raw_frames = [
@@ -106,6 +107,9 @@ class Devil(Enemy):
             for frame in raw_sweep_frames
         ]
 
+        self.shadow_image_raw = pygame.image.load("assets/misc/entity-shadow.png").convert_alpha()
+        self.shadow = make_shadow(self.shadow_image_raw, self.right_idle_frames[0].get_width())
+
         # Animation sequences (back and forth)
         self.idle_sequence = [0, 1, 2, 3, 4, 3, 2, 1]
         self.hit_sequence = [0, 1, 2, 3, 4, 5, 6, 5, 4, 3, 2, 1]
@@ -148,6 +152,8 @@ class Devil(Enemy):
                                     ymargin=1
                                     )
 
+        self.color = (213, 38, 38)
+
     def primary_attack(self, player):
         """Attack the player with a melee sweep if in range and cooldown is ready."""
         dx = player.x - self.x
@@ -175,10 +181,17 @@ class Devil(Enemy):
             sweep = SwordSweep(spawn_x, spawn_y, vx, vy, self.attack_damage, self.attack_duration, self.sweep_frames, angle=angle)
             self.melee_sweeps.add(sweep)
 
-            # Set attack state
+            # Set attack state 
             self.is_attacking = True
             self.attack_timer = current_time
             self.time_from_last_attack = current_time  # Reset cooldown timer
+
+    def wave_update(self):
+        if game.wave_number > self.last_wave_processed and game.wave_number > 1:
+            super().wave_update()  # Call parent to apply base upgrades (health, damage, or knockback)
+            attack_radius_increment = 15
+            self.attack_radius += attack_radius_increment
+            self.healthbar.max_value = self.max_health  # Update healthbar max value with new health
 
     def update(self, player):
         # Check if knockback should end
@@ -254,7 +267,9 @@ class Devil(Enemy):
                     self.image = self.death_frames[self.death_frame_index]
                     self.death_frame_index += 1
                 else:
-                    self.kill()  
+                    self.die()
+                    self.death_drops_generation(player)  # Generate drops upon death
+                    self.kill() 
             elif self.is_hit:
                 # Play hit animation (back and forth)
                 self.hit_frame_index = (self.hit_frame_index + 1) % len(self.hit_sequence)
@@ -276,4 +291,7 @@ class Devil(Enemy):
                 self.idle_frame_index = (self.idle_frame_index + 1) % len(self.idle_sequence)
                 frame_to_show = self.idle_sequence[self.idle_frame_index]
                 self.image = idle_frames[frame_to_show]
+                
+        self.shadow = make_shadow(self.shadow_image_raw, self.image.get_width())
+
         

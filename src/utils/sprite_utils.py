@@ -1,18 +1,15 @@
-"""Utilities for sprite collision and bounds calculations."""
-
 import pygame
 
+def make_shadow(raw_image, sprite_width, alpha=100):
+    """Scale shadow to match a sprite's width with flat ellipse proportions."""
+    shadow_w = int(sprite_width * 0.7)
+    shadow_h = int(sprite_width * 0.4)
+    shadow = pygame.transform.scale(raw_image, (shadow_w, shadow_h))
+    shadow.set_alpha(alpha)
+    return shadow
+
 def get_sprite_bounds(surface):
-    """
-    Get the bounding rect of non-transparent pixels in a surface.
-    Returns a rect with the actual visible sprite bounds (crops transparent padding).
     
-    Args:
-        surface: pygame.Surface to analyze
-        
-    Returns:
-        pygame.Rect with x, y, width, height of non-transparent content
-    """
     mask = pygame.mask.from_surface(surface)
     rect = mask.get_bounding_rects()
     

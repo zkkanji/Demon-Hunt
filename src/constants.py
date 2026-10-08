@@ -1,5 +1,6 @@
-WIDTH = 1000
-HEIGHT = 700
-FPS = 50
+MIN_WIDTH = 1000
+MIN_HEIGHT = 700
+FPS = 60
 
-BG_COLOR = (46, 139, 87)  # Green background color
+BG_COLOR = (72, 81, 96)  # Grey background color
+UI_COLOR = (200, 200, 200)  # Light gray for UI elements

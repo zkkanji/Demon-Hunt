@@ -7,9 +7,10 @@ class MeleeBase(BaseWeapon):
                 is_automatic, 
                 melee_range, 
                 attack_cooldown, 
+                crit_mult=1.0,
                 weapon_type = "melee"):
         
-        super().__init__(name, damage, is_automatic, weapon_type)
+        super().__init__(name, damage, is_automatic, crit_mult, weapon_type)
         self.melee_range = melee_range  # Range of the melee attack
         self.attack_cooldown = attack_cooldown  # Cooldown period between attacks
         self.time_from_last_attack = 0  # Time since the last attack was made
