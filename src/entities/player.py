@@ -28,8 +28,38 @@ class Player(BaseEntity):
         self.is_dying = False
         self.death_timer = 0
         self.color = (29, 116, 205)
+        self.weapon_in_hand = True  # True if the player has a weapon in hand, False if unarmed
 
         #Player Design/Animation frames (Blaster or Sword)
+
+        #No Weapon Frames Raw (Idle Left Right and Movement)
+        blank_idle_right_raw = [
+            pygame.image.load(f"assets/player/noWeapon/right/idle/f{i}.png")
+            for i in range(1, 6)
+        ]
+        blank_idle_left_raw = [
+            pygame.image.load(f"assets/player/noWeapon/left/idle/f{i}.png")
+            for i in range(1, 6)
+        ]
+        blank_movement = [
+            pygame.image.load(f"assets/player/noWeapon/movement/f{i}.png")
+            for i in range(1, 6)
+        ]
+
+        #Scaled Blank Frames
+        self.blank_idle_right = [
+            pygame.transform.scale(frame, (int(frame.get_width() * scale_factor), int(frame.get_height() * scale_factor)))
+            for frame in blank_idle_right_raw
+        ]
+        self.blank_idle_left = [
+            pygame.transform.scale(frame, (int(frame.get_width() * scale_factor), int(frame.get_height() * scale_factor)))
+            for frame in blank_idle_left_raw
+        ]
+        self.blank_movement = [
+            pygame.transform.scale(frame, (int(frame.get_width() * scale_factor), int(frame.get_height() * scale_factor)))
+            for frame in blank_movement
+        ]
+
         #Blaster Raw Frames (Left and Right)
         blaster_idle_right_raw =[
             pygame.image.load(f"assets/player/blaster/blaster-right/idle/f{i}.png")
@@ -158,6 +188,44 @@ class Player(BaseEntity):
             for frame in sword_attack_right_raw
         ]
 
+        # Raw Boomerang Frames
+        boomerang_idle_left_raw = [
+            pygame.image.load(f"assets/player/boomerang/left/idle/f{i}.png")
+            for i in range(1, 6)
+            ] # Left Idle Frames
+        boomerang_idle_right_raw = [
+            pygame.image.load(f"assets/player/boomerang/right/idle/f{i}.png")
+            for i in range(1, 6)
+            ] # Right Idle Frames
+        boomerang_move_left_raw = [
+            pygame.image.load(f"assets/player/boomerang/left/movement/f{i}.png")
+            for i in range(1, 6)
+            ] # Left Movement Frames
+        boomerang_move_right_raw = [
+            pygame.image.load(f"assets/player/boomerang/right/movement/f{i}.png")
+            for i in range(1, 6)
+            ] # Right Movement Frames
+
+        # Scaled Boomerang Frames
+        self.boomerang_idle_left = [
+            pygame.transform.scale(frame, (int(frame.get_width() * scale_factor), int(frame.get_height() * scale_factor)))
+            for frame in boomerang_idle_left_raw
+        ]
+        self.boomerang_idle_right = [
+            pygame.transform.scale(frame, (int(frame.get_width() * scale_factor), int(frame.get_height() * scale_factor)))
+            for frame in boomerang_idle_right_raw
+        ]
+        self.boomerang_move_left = [
+            pygame.transform.scale(frame, (int(frame.get_width() * scale_factor), int(frame.get_height() * scale_factor)))
+            for frame in boomerang_move_left_raw
+        ]
+        self.boomerang_move_right = [
+            pygame.transform.scale(frame, (int(frame.get_width() * scale_factor), int(frame.get_height() * scale_factor)))
+            for frame in boomerang_move_right_raw
+        ]
+
+
+
         # Death Frames
         death_frames_raw = [
             pygame.image.load(f"assets/player/death/f{i}.png")
@@ -181,6 +249,14 @@ class Player(BaseEntity):
             pygame.image.load(f"assets/player/shotgun/shotgun-right/hit/f{i}.png")
             for i in range (1, 6)
         ]
+        boomerang_hit_right_raw = [
+            pygame.image.load(f"assets/player/boomerang/right/hit/f{i}.png")
+            for i in range (1, 8)
+        ]
+        blank_hit_right_raw = [
+            pygame.image.load(f"assets/player/noWeapon/right/hit/f{i}.png")
+            for i in range (1, 8)
+        ]
         self.sword_hit_right = [
             pygame.transform.scale(frame, (int(frame.get_width() * scale_factor), int(frame.get_height() * scale_factor)))
             for frame in sword_hit_right_raw
@@ -192,6 +268,14 @@ class Player(BaseEntity):
         self.shotgun_hit_right = [
             pygame.transform.scale(frame, (int(frame.get_width() * scale_factor), int(frame.get_height() * scale_factor)))
             for frame in shotgun_hit_right_raw
+        ]
+        self.boomerang_hit_right = [
+            pygame.transform.scale(frame, (int(frame.get_width() * scale_factor), int(frame.get_height() * scale_factor)))
+            for frame in boomerang_hit_right_raw
+        ]
+        self.blank_hit_right = [
+            pygame.transform.scale(frame, (int(frame.get_width() * scale_factor), int(frame.get_height() * scale_factor)))
+            for frame in blank_hit_right_raw
         ]
 
         # Left hit frames
@@ -207,6 +291,14 @@ class Player(BaseEntity):
             pygame.image.load(f"assets/player/shotgun/shotgun-left/hit/f{i}.png")
             for i in range (1, 6)
         ]
+        boomerang_hit_left_raw = [
+            pygame.image.load(f"assets/player/boomerang/left/hit/f{i}.png")
+            for i in range (1, 8)
+        ]
+        blank_hit_left_raw = [
+            pygame.image.load(f"assets/player/noWeapon/left/hit/f{i}.png")
+            for i in range (1, 8)
+        ]
         self.sword_hit_left = [
             pygame.transform.scale(frame, (int(frame.get_width() * scale_factor), int(frame.get_height() * scale_factor)))  
             for frame in sword_hit_left_raw
@@ -218,6 +310,14 @@ class Player(BaseEntity):
         self.shotgun_hit_left = [
             pygame.transform.scale(frame, (int(frame.get_width() * scale_factor), int(frame.get_height() * scale_factor)))
             for frame in shotgun_hit_left_raw
+        ]
+        self.boomerang_hit_left = [
+            pygame.transform.scale(frame, (int(frame.get_width() * scale_factor), int(frame.get_height() * scale_factor)))
+            for frame in boomerang_hit_left_raw
+        ]
+        self.blank_hit_left = [
+            pygame.transform.scale(frame, (int(frame.get_width() * scale_factor), int(frame.get_height() * scale_factor)))
+            for frame in blank_hit_left_raw
         ]
 
         blaster_shoot_right_raw = [
@@ -355,22 +455,30 @@ class Player(BaseEntity):
     def get_idle_frames(self):
         """Get idle frame set based on equipped weapon and cursor side."""
         if self.weapon_equipped:
-            if self.weapon_equipped.name == "Blaster":
+            if self.weapon_equipped.name == "Boomerang" and not self.weapon_in_hand:
+                return self.blank_idle_left if self.cursor_side == "left" else self.blank_idle_right
+            elif self.weapon_equipped.name == "Blaster":
                 return self.blaster_idle_left if self.cursor_side == "left" else self.blaster_idle_right
             elif self.weapon_equipped.name == "Shotgun":
                 return self.shotgun_idle_left if self.cursor_side == "left" else self.shotgun_idle_right
             elif self.weapon_equipped.name == "Sword":
                 return self.sword_idle_left if self.cursor_side == "left" else self.sword_idle_right
+            elif self.weapon_equipped.name == "Boomerang":
+                return self.boomerang_idle_left if self.cursor_side == "left" else self.boomerang_idle_right
 
     def get_walk_frames(self):
         """Get walk frame set based on equipped weapon and cursor side."""
         if self.weapon_equipped:
-            if self.weapon_equipped.name == "Blaster":
+            if self.weapon_equipped.name == "Boomerang" and not self.weapon_in_hand:
+                return self.blank_movement
+            elif self.weapon_equipped.name == "Blaster":
                 return self.blaster_move_left if self.cursor_side == "left" else self.blaster_move_right
             elif self.weapon_equipped.name == "Shotgun":
                 return self.shotgun_walk_left if self.cursor_side == "left" else self.shotgun_walk_right
             elif self.weapon_equipped.name == "Sword":
                 return self.sword_walk_left if self.cursor_side == "left" else self.sword_walk_right
+            elif self.weapon_equipped.name == "Boomerang":
+                return self.boomerang_move_left if self.cursor_side == "left" else self.boomerang_move_right
 
 
     def update(self):
@@ -416,8 +524,7 @@ class Player(BaseEntity):
                     self.image = self.death_frames[self.death_frame_index]
                     self.death_frame_index += 1
                 else:
-                    # Death animation finished, kill the sprite
-                    self.kill()
+                    # Leave the final frame visible until the main loop switches screens.
                     self.is_alive = False
         # Play hit animation when taking damage (takes priority over other animations)
         elif self.is_hit:
@@ -426,6 +533,10 @@ class Player(BaseEntity):
                 hit_frames = self.blaster_hit_left if self.cursor_side == "left" else self.blaster_hit_right
             elif self.weapon_equipped and self.weapon_equipped.name == "Shotgun":
                 hit_frames = self.shotgun_hit_left if self.cursor_side == "left" else self.shotgun_hit_right
+            elif self.weapon_equipped and self.weapon_equipped.name == "Boomerang" and not self.weapon_in_hand:
+                hit_frames = self.blank_hit_left if self.cursor_side == "left" else self.blank_hit_right
+            elif self.weapon_equipped and self.weapon_equipped.name == "Boomerang":
+                hit_frames = self.boomerang_hit_left if self.cursor_side == "left" else self.boomerang_hit_right
             else:
                 hit_frames = self.sword_hit_left if self.cursor_side == "left" else self.sword_hit_right
             

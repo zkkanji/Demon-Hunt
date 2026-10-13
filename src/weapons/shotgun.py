@@ -18,7 +18,7 @@ class Shotgun(GunBase):
     def attack(self, player_pos, direction):
         if self.is_reloading:
             return False
-        if self.ammo <= 0:
+        if self.ammo < self.num_projectiles_per_shot:
             return False
         if not self.check_shot_ready():
             return False

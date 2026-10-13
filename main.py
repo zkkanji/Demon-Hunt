@@ -8,6 +8,7 @@ from src.entities.player import Player
 from src.weapons.blaster import Blaster   
 from src.weapons.shotgun import Shotgun
 from src.weapons.sword import Sword
+from src.weapons.boomerang import Boomerang
 from src.entities.devil1 import Devil1
 from src.entities.devil2 import Devil2
 from src.game import check_projectile_collision, check_player_enemy_collision, advance_wave, get_enemy_spawn_position, check_enemy_enemy_collision, check_player_drop_collision, check_bomb_explosion_collisions, check_sword_projectile_collisions
@@ -111,11 +112,13 @@ landscaping.generate_rocks()
 blaster = Blaster()
 sword = Sword()
 shotgun = Shotgun()
+boomerang = Boomerang(player)
 player.gun_inventory.append(blaster)  
 player.gun_inventory.append(shotgun)
 player.melee_inventory.append(sword)
+player.melee_inventory.append(boomerang)
 player.weapon_swap(shotgun) 
-player.weapon_swap(sword) 
+player.weapon_swap(boomerang) 
 player.equip_weapon(player.weapons_inventory["gun"])  # Equip the blaster as the current weapon
 
 ui_manager = UImanager(screen, player)
@@ -250,8 +253,8 @@ while running:
         # Update wave interval timer if active
         if game.wave_interval_started:
             elapsed = pygame.time.get_ticks() - game.wave_interval_start_time
-            game.wave_interval_timer = max(0, game.WAVE_INTERVAL_TIME - elapsed) + 1000
-            if game.wave_interval_timer <= 1000:
+            game.wave_interval_timer = max(0, game.WAVE_INTERVAL_TIME - elapsed)
+            if game.wave_interval_timer <= 0:
                 game.wave_interval_started = False
                 advance_wave()  # Advance to next wave when interval ends
         
@@ -279,7 +282,7 @@ while running:
                 enemy_spawn_timer = 0
         
         # Check if wave is complete (all enemies spawned and killed)
-        if enemies_spawned_this_wave >= game.max_enemies_current_wave and len(enemies) == 0:
+        if enemies_spawned_this_wave >= game.max_enemies_current_wave and game.enemies_left_in_wave <= 0:
             # Show upgrade card selection immediately (before timer)
             # Initialize upgrade card selection overlay
             card_lists = [
@@ -289,6 +292,7 @@ while running:
                 crit_upgrade_cards,
                 power_up_cards
             ]
+            update_upgrade_card_weapons(melee_upgrade_cards, player.weapons_inventory["melee"])
             # Append appropriate card lists based on current loadout
             if player.weapons_inventory["gun"].name == "Blaster":
                 update_upgrade_card_weapons(blaster_magazine_upgrade_cards, player.weapons_inventory["gun"])
@@ -297,15 +301,13 @@ while running:
                 update_upgrade_card_weapons(shotgun_magazine_upgrade_cards, player.weapons_inventory["gun"])
                 card_lists.append(shotgun_magazine_upgrade_cards)
 
-            if player.weapons_inventory["melee"].name == "Sword":
+            if player.weapons_inventory["melee"].name in ("Sword", "Boomerang"):
                 update_upgrade_card_weapons(sword_range_upgrade_cards, player.weapons_inventory["melee"])
                 card_lists.append(sword_range_upgrade_cards)
             selected_upgrade_cards = initialize_upgrade_selection(card_lists)
             current_state = UPGRADE_SELECTION
 
         all_sprites.update()  # Update all sprites (includes player with weapon sprites)
-        if not player.is_alive:
-            current_state = DEATH_SCREEN
         player.weapons_inventory["gun"].update()  # Update the blaster (which updates its projectiles)
         player.weapons_inventory["melee"].update()  # Update the sword (which updates its attack animation)
         living_before = list(enemies)
@@ -354,16 +356,17 @@ while running:
             reload_remaining = 0
 
         # Collision detection
+        equipped_melee = player.weapons_inventory["melee"]
+        melee_projectiles = getattr(equipped_melee, "sweeps", None)
+        if melee_projectiles is None:
+            melee_projectiles = getattr(equipped_melee, "projectiles", None)
         check_projectile_collision(
             player.weapons_inventory["gun"].projectiles, 
             enemies,
             particles
             )
-        check_projectile_collision(
-            sword.sweeps, 
-            enemies,
-            particles
-            )
+        if melee_projectiles is not None:
+            check_projectile_collision(melee_projectiles, enemies, particles)
         check_player_enemy_collision(player, enemies, particles)
         check_enemy_enemy_collision(enemies)
         for drop in enemy_drops:
@@ -390,12 +393,11 @@ while running:
                         sweep.kill()  # Remove sweep after hitting player
 
         # Parry: sword sweeps destroy enemy projectiles before player collision is checked
-        if player.weapons_inventory["melee"].name == "Sword":
-            check_sword_projectile_collisions(player.weapons_inventory["melee"].sweeps, enemy_projectiles)
-            check_sword_projectile_collisions(sword.sweeps, enemy_projectiles)
+        if hasattr(equipped_melee, "sweeps"):
+            check_sword_projectile_collisions(equipped_melee.sweeps, enemy_projectiles)
             for enemy in enemies:
                 if hasattr(enemy, 'projectiles'):
-                    check_sword_projectile_collisions(sword.sweeps, enemy.projectiles)
+                    check_sword_projectile_collisions(equipped_melee.sweeps, enemy.projectiles)
 
         # Check enemy projectiles collision with player
         player_collision_rect = getattr(player, 'collision_rect', player.rect)
@@ -449,7 +451,8 @@ while running:
             equipped_gun.reload_bar.draw(screen)
         
         player.weapons_inventory["gun"].projectiles.draw(screen)  # Draw all gun projectiles
-        player.weapons_inventory["melee"].sweeps.draw(screen)  # Draw all sword sweep projectiles
+        if melee_projectiles is not None:
+            melee_projectiles.draw(screen)
         enemy_projectiles.draw(screen)  # Draw orphaned projectiles from dead enemies
 
         particles.draw(screen)  # Draw all active particles
@@ -514,6 +517,8 @@ while running:
         draw_menu_buttons(screen, [replay_button, death_quit_button])
 
     pygame.display.flip()
+    if current_state == PLAYING and not player.is_alive:
+        current_state = DEATH_SCREEN
     clock.tick(FPS)  # Maintain the frame rate
 
 pygame.quit()

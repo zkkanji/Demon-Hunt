@@ -38,6 +38,8 @@ def check_projectile_collision(projectiles, enemies, particle_group):
         
         # Check if projectile hits any enemy
         for enemy in enemies:
+            if enemy in getattr(projectile, "hit_entities", set()):
+                continue
             # Use collision rect if available, otherwise use rect
             enemy_collision_rect = getattr(enemy, 'collision_rect', enemy.rect)
             
@@ -50,6 +52,7 @@ def check_projectile_collision(projectiles, enemies, particle_group):
                 
                 # Apply damage to enemy
                 enemy.take_damage(projectile.damage, projectile.is_critical)
+                projectile.hit_entities.add(enemy)
 
                 create_hit_burst(
                     particle_group,
@@ -61,7 +64,8 @@ def check_projectile_collision(projectiles, enemies, particle_group):
                 if was_alive and enemy.current_health <= 0:
                     game_score += 100
                 
-                projectile.kill()  # Remove projectile after hit
+                if projectile.destroy_on_hit:
+                    projectile.kill()  # Remove projectile after hit
                 break  # Only hit one enemy per projectile
 
 
@@ -196,4 +200,3 @@ def triple_card_selector(cards):
             cards.remove(cards[index])  # Remove selected card to avoid duplicates in triple
         return card_triple
     return cards   
-

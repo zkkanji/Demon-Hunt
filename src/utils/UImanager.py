@@ -51,7 +51,7 @@ class UImanager:
         self.enemies_value = self.font_numbers.render(f"{game.enemies_left_in_wave}", True, UI_COLOR)
 
         # Wave Interval Timer UI
-        self.wave_interval_value = self.font_numbers_large.render(f"{game.wave_interval_timer // 1000}", True, UI_COLOR)
+        self.wave_interval_value = self.font_numbers_large.render(f"{(game.wave_interval_timer + 999) // 1000}", True, UI_COLOR)
 
         # Current Power-ups UI
         self.power_up_scale = 1.75
@@ -64,7 +64,7 @@ class UImanager:
         self.score_value = self.font_numbers.render(f"{game.game_score}", True, UI_COLOR)
         self.wave_value = self.font_numbers.render(f"{game.wave_number}", True, UI_COLOR)
         self.enemies_value = self.font_numbers.render(f"{game.enemies_left_in_wave}", True, UI_COLOR)
-        self.wave_interval_value = self.font_numbers_large.render(f"{game.wave_interval_timer // 1000}", True, UI_COLOR)
+        self.wave_interval_value = self.font_numbers_large.render(f"{(game.wave_interval_timer + 999) // 1000}", True, UI_COLOR)
         if player.power_up is not None:
             self.power_up_image = player.power_up.UI_logo
             self.power_up_image = pygame.transform.scale(self.power_up_image, (self.power_up_image.get_width() * self.power_up_scale, self.power_up_image.get_height() * self.power_up_scale))
@@ -91,5 +91,5 @@ class UImanager:
             self.screen.blit(self.enemies_value, (w - 50, 82))
 
             # Show wave interval timer when interval is active
-            if game.wave_interval_timer > 1000:
+            if game.wave_interval_timer > 0:
                 self.screen.blit(self.wave_interval_value, (w // 2, h // 2 - 20))
