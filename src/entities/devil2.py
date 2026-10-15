@@ -4,6 +4,7 @@ from .enemy_base import Enemy
 from src.utils.progressbar import ProgressBar
 from src.entities.projectile import AnimatedProjectile
 from src.utils.sprite_utils import get_sprite_bounds, make_shadow
+from src.utils.assets import load_image, scale_surface
 
 class Devil2(Enemy):
 
@@ -25,89 +26,89 @@ class Devil2(Enemy):
 
         #Idle Frames (Right)
         idle_frames_right_raw = [
-            pygame.image.load(f"assets/enemies/enemy2/right/idle/f{i}.png")
+            load_image(f"assets/enemies/enemy2/right/idle/f{i}.png")
             for i in range(1, 6)
         ]
         self.right_idle_frames = [
-            pygame.transform.scale(frame, (int(frame.get_width() * self.scale_factor), int(frame.get_height() * self.scale_factor)))
+            scale_surface(frame, int(frame.get_width() * self.scale_factor), int(frame.get_height() * self.scale_factor))
             for frame in idle_frames_right_raw
         ]
         #Idle Frames (Left)
         idle_frames_left_raw = [
-            pygame.image.load(f"assets/enemies/enemy2/left/idle/f{i}.png")
+            load_image(f"assets/enemies/enemy2/left/idle/f{i}.png")
             for i in range(1, 6)
         ]
         self.left_idle_frames = [
-            pygame.transform.scale(frame, (int(frame.get_width() * self.scale_factor), int(frame.get_height() * self.scale_factor)))
+            scale_surface(frame, int(frame.get_width() * self.scale_factor), int(frame.get_height() * self.scale_factor))
             for frame in idle_frames_left_raw
         ]
 
         #Right Movement Frames
         right_movement_frames_raw = [
-            pygame.image.load(f"assets/enemies/enemy2/right/movement/f{i}.png")
+            load_image(f"assets/enemies/enemy2/right/movement/f{i}.png")
             for i in range(1, 6)
         ]
         self.right_movement_frames = [
-            pygame.transform.scale(frame, (int(frame.get_width() * self.scale_factor), int(frame.get_height() * self.scale_factor)))
+            scale_surface(frame, int(frame.get_width() * self.scale_factor), int(frame.get_height() * self.scale_factor))
             for frame in right_movement_frames_raw
         ]
         #Left Movement Frames
         left_movement_frames_raw = [
-            pygame.image.load(f"assets/enemies/enemy2/left/movement/f{i}.png")
+            load_image(f"assets/enemies/enemy2/left/movement/f{i}.png")
             for i in range(1, 6)
         ]
         self.left_movement_frames = [
-            pygame.transform.scale(frame, (int(frame.get_width() * self.scale_factor), int(frame.get_height() * self.scale_factor)))
+            scale_surface(frame, int(frame.get_width() * self.scale_factor), int(frame.get_height() * self.scale_factor))
             for frame in left_movement_frames_raw
         ]
 
         #Right Hit Frames
         right_hit_frames_raw = [
-            pygame.image.load(f"assets/enemies/enemy2/right/hit/f{i}.png")
+            load_image(f"assets/enemies/enemy2/right/hit/f{i}.png")
             for i in range(1, 8)
         ]
         self.right_hit_frames = [
-            pygame.transform.scale(frame, (int(frame.get_width() * self.scale_factor), int(frame.get_height() * self.scale_factor)))
+            scale_surface(frame, int(frame.get_width() * self.scale_factor), int(frame.get_height() * self.scale_factor))
             for frame in right_hit_frames_raw
         ]
         #Left Hit Frames
         left_hit_frames_raw = [
-            pygame.image.load(f"assets/enemies/enemy2/left/hit/f{i}.png")
+            load_image(f"assets/enemies/enemy2/left/hit/f{i}.png")
             for i in range(1, 8)
         ]
         self.left_hit_frames = [
-            pygame.transform.scale(frame, (int(frame.get_width() * self.scale_factor), int(frame.get_height() * self.scale_factor)))
+            scale_surface(frame, int(frame.get_width() * self.scale_factor), int(frame.get_height() * self.scale_factor))
             for frame in left_hit_frames_raw
         ]
 
         #Death Frames (f1-f11; f12 asset is missing)
         death_frames_raw = [
-            pygame.image.load(f"assets/enemies/enemy2/death/f{i}.png")
+            load_image(f"assets/enemies/enemy2/death/f{i}.png")
             for i in range(1, 13)
         ]
         self.death_frames = [
-            pygame.transform.scale(frame, (int(frame.get_width() * self.scale_factor), int(frame.get_height() * self.scale_factor)))
+            scale_surface(frame, int(frame.get_width() * self.scale_factor), int(frame.get_height() * self.scale_factor))
             for frame in death_frames_raw
         ]
 
         #Attack Frames (direction-agnostic)
         attack_frames_raw = [
-            pygame.image.load(f"assets/enemies/enemy2/attack/f{i}.png")
+            load_image(f"assets/enemies/enemy2/attack/f{i}.png")
             for i in range(1, 5)
         ]
         self.attack_frames = [
-            pygame.transform.scale(frame, (int(frame.get_width() * self.scale_factor), int(frame.get_height() * self.scale_factor)))
+            scale_surface(frame, int(frame.get_width() * self.scale_factor), int(frame.get_height() * self.scale_factor))
             for frame in attack_frames_raw
         ]
 
         #Projectile Frames
         projectile_scale = 2.5
         projectile_frames_raw = [
-            pygame.image.load(f"assets/misc/enemy2-projectile/f{i}.png")
+            load_image(f"assets/misc/enemy2-projectile/f{i}.png")
             for i in range(1, 4)
         ]
         self.projectile_frames = [
-            pygame.transform.scale(frame, (int(frame.get_width() * projectile_scale), int(frame.get_height() * projectile_scale)))
+            scale_surface(frame, int(frame.get_width() * projectile_scale), int(frame.get_height() * projectile_scale))
             for frame in projectile_frames_raw
         ]
 
@@ -144,7 +145,7 @@ class Devil2(Enemy):
         self.hit_duration = 200
 
         #Shadow Frame Code
-        self.shadow_image_raw = pygame.image.load("assets/misc/entity-shadow.png").convert_alpha()
+        self.shadow_image_raw = load_image("assets/misc/entity-shadow.png")
         self.shadow = make_shadow(self.shadow_image_raw, self.right_idle_frames[0].get_width())
 
         #Enemy Health Bar Code

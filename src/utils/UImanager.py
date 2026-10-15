@@ -2,6 +2,7 @@ import pygame
 from src.utils.progressbar import ProgressBar
 import src.game as game
 from src.constants import UI_COLOR
+from src.utils.assets import load_image
 
 class UImanager:
     def __init__(self, screen, player):
@@ -26,7 +27,7 @@ class UImanager:
                                     )
 
         # Pause UI (coords computed at draw-time from screen size)
-        self.pause_image_raw = pygame.image.load(f"assets/misc/pause.png")
+        self.pause_image_raw = load_image("assets/misc/pause.png")
         pause_logo_scale = 2.5
         self.pause_image = pygame.transform.scale(self.pause_image_raw, (self.pause_image_raw.get_width() * pause_logo_scale, self.pause_image_raw.get_height() * pause_logo_scale))
 
@@ -34,7 +35,7 @@ class UImanager:
         self.ammo_logo_coords = (10, 60)
         self.ammo_text_coords = (56, 73)
         ammo_logo_scale = 1.5
-        ammo_logo_raw = pygame.image.load(f"assets/misc/ammologo.png")
+        ammo_logo_raw = load_image("assets/misc/ammologo.png")
         self.ammo_logo = pygame.transform.scale(ammo_logo_raw, (ammo_logo_raw.get_width() * ammo_logo_scale, ammo_logo_raw.get_height() * ammo_logo_scale))
         self.ammo_text = self.font_numbers.render(f"{player.weapons_inventory['gun'].ammo}/{player.ammo}", True, UI_COLOR)
 

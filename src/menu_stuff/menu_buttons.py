@@ -1,10 +1,11 @@
 import pygame
+from src.utils.assets import load_image, scale_surface
 
 class MenuButton:
 
     def __init__(self, image_path, x, y, action, scale=3):
-        self.idle_image_raw = pygame.image.load(f"assets/menu/buttons/{image_path}1.png").convert_alpha()
-        self.hover_image_raw = pygame.image.load(f"assets/menu/buttons/{image_path}2.png").convert_alpha()
+        self.idle_image_raw = load_image(f"assets/menu/buttons/{image_path}1.png")
+        self.hover_image_raw = load_image(f"assets/menu/buttons/{image_path}2.png")
         self.action = action
         self.is_hovered = False
         self.scale = scale
@@ -21,8 +22,8 @@ class MenuButton:
             int(self.hover_image_raw.get_width() * self.scale),
             int(self.hover_image_raw.get_height() * self.scale),
         )
-        self.idle_image = pygame.transform.scale(self.idle_image_raw, size)
-        self.hover_image = pygame.transform.scale(self.hover_image_raw, hover_size)
+        self.idle_image = scale_surface(self.idle_image_raw, *size)
+        self.hover_image = scale_surface(self.hover_image_raw, *hover_size)
         self.image = self.hover_image if self.is_hovered else self.idle_image
 
     def set_position(self, x, y):

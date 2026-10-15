@@ -4,6 +4,7 @@ from .melee_base import MeleeBase
 from src.entities.sword_sweep import SwordSweep
 from src.constants import FPS
 from src.utils.progressbar import ProgressBar
+from src.utils.assets import load_image, scale_surface
 
 class Sword(MeleeBase):
     
@@ -12,12 +13,16 @@ class Sword(MeleeBase):
         #melee range should be 170
         # Load sword sweep animation frames
         sweep_scale = 5.7
-        self.sweep_frames = [
-            pygame.transform.scale(pygame.image.load(f"assets/misc/sword-sweep/sword-sweep{i}.png"), 
-                                 (int(pygame.image.load(f"assets/misc/sword-sweep/sword-sweep{i}.png").get_width() * sweep_scale),
-                                  int(pygame.image.load(f"assets/misc/sword-sweep/sword-sweep{i}.png").get_height() * sweep_scale)))
-            for i in range(1, 13)
-        ]
+        self.sweep_frames = []
+        for i in range(1, 13):
+            frame = load_image(f"assets/misc/sword-sweep/sword-sweep{i}.png")
+            self.sweep_frames.append(
+                scale_surface(
+                    frame,
+                    int(frame.get_width() * sweep_scale),
+                    int(frame.get_height() * sweep_scale),
+                )
+            )
         
         self.sweeps = pygame.sprite.Group()  # Group to manage active sweep projectiles
         

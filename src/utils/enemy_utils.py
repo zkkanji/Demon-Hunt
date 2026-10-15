@@ -1,6 +1,7 @@
 import pygame
 from pygame.sprite import Sprite
 from src.utils.sprite_utils import make_shadow
+from src.utils.assets import load_image, scale_surface
 
 class DamageNumber:
     def __init__(self, pos, amount, is_critical=False):
@@ -41,16 +42,20 @@ class EnemyDrops(Sprite):
         raw_image = None
         if self.player_attribute == "ammo":
             image_scale = 1.3
-            raw_image = pygame.image.load(f"assets/misc/drops/ammo.png").convert_alpha()
+            raw_image = load_image("assets/misc/drops/ammo.png")
         elif self.player_attribute == "current_health":
             image_scale = 1.5
-            raw_image = pygame.image.load(f"assets/misc/drops/health.png").convert_alpha()
-        self.image = pygame.transform.scale(raw_image, (raw_image.get_width() * image_scale, raw_image.get_height() * image_scale))   
+            raw_image = load_image("assets/misc/drops/health.png")
+        self.image = scale_surface(
+            raw_image,
+            int(raw_image.get_width() * image_scale),
+            int(raw_image.get_height() * image_scale),
+        )
         self.rect = self.image.get_rect(center=(self.x, self.y))
         self.lifetime = 125000 #ms
         self.spawn_time = pygame.time.get_ticks()
         self.effecting_attribute = getattr(self.player, self.player_attribute)
-        shadow_image_raw = pygame.image.load("assets/misc/entity-shadow.png").convert_alpha()
+        shadow_image_raw = load_image("assets/misc/entity-shadow.png")
         self.shadow = make_shadow(shadow_image_raw, self.rect.width)
         self.base_y = float(self.y)
         self.hover_offset = 0.0
@@ -80,4 +85,3 @@ class EnemyDrops(Sprite):
 
     def draw(self, screen):
         screen.blit(self.image, (self.x, self.y))
-

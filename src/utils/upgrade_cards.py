@@ -1,24 +1,35 @@
 import pygame
+from functools import lru_cache
 #from . import power_ups as pup
 from src.constants import UI_COLOR
+from src.utils.assets import load_image, scale_surface
+
+
+@lru_cache(maxsize=1)
+def _card_animation_frames():
+    return tuple(
+        (
+            lambda image: scale_surface(
+                image,
+                image.get_width() * 8,
+                image.get_height() * 8,
+            )
+        )(load_image(f"assets/upgrade-cards/card-animation/f{i}.png"))
+        for i in range(1, 9)
+    )
 
 class card:
     
     def __init__(self, text, image_folder):
         self.text = text
         image_scale = 8
-        image_idle = pygame.image.load(f"{image_folder}/card.png")
-        image_hover = pygame.image.load(f"{image_folder}/card-hover.png")
-        self.images = (pygame.transform.scale(image_idle, (image_idle.get_width() * image_scale, image_idle.get_height() * image_scale)), 
-                       pygame.transform.scale(image_hover, (image_hover.get_width() * image_scale, image_hover.get_height() * image_scale)))
-        animation_frames_raw = [
-            pygame.image.load(f"assets/upgrade-cards/card-animation/f{i}.png")
-            for i in range(1, 9)
-        ]
-        self.animation_frames = [
-            pygame.transform.scale(image, (image.get_width() * image_scale, image.get_height() * image_scale))
-            for image in animation_frames_raw
-        ]
+        image_idle = load_image(f"{image_folder}/card.png")
+        image_hover = load_image(f"{image_folder}/card-hover.png")
+        self.images = (
+            scale_surface(image_idle, image_idle.get_width() * image_scale, image_idle.get_height() * image_scale),
+            scale_surface(image_hover, image_hover.get_width() * image_scale, image_hover.get_height() * image_scale),
+        )
+        self.animation_frames = _card_animation_frames()
         self.rect = self.images[0].get_rect()
         # Create a tighter collision rect to avoid overlapping card detection
         self.collision_rect = self.rect.inflate(-self.rect.width * 0.5, -self.rect.height * 0.3)

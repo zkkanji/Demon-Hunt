@@ -1,6 +1,7 @@
 import pygame
 from pygame.sprite import Sprite
 from src.utils.sprite_utils import make_shadow
+from src.utils.assets import load_image, scale_surface
 from abc import ABC, abstractmethod
 
 #Stores all power up classes in file
@@ -42,18 +43,18 @@ class Bomb_PowerUp(PowerUp):
             self.radius = radius
 
             bomb_frames_raw = [
-                pygame.image.load(f"assets/misc/bomb-frames/f{i}.png")
+                load_image(f"assets/misc/bomb-frames/f{i}.png")
                 for i in range(1, 14)
             ]
             explosion_frames_raw = [
-                pygame.image.load(f"assets/misc/explosion/f{i}.png")
+                load_image(f"assets/misc/explosion/f{i}.png")
                 for i in range(1, 8)
             ]
-            blast_radius_raw = pygame.image.load("assets/misc/blast-radius.png").convert_alpha()
+            blast_radius_raw = load_image("assets/misc/blast-radius.png")
 
             image_scale = 2
             self.bomb_frames = [
-                pygame.transform.scale(frame, (int(frame.get_width() * image_scale), int(frame.get_height() * image_scale)))
+                scale_surface(frame, int(frame.get_width() * image_scale), int(frame.get_height() * image_scale))
                 for frame in bomb_frames_raw
             ]
 
@@ -61,12 +62,12 @@ class Bomb_PowerUp(PowerUp):
             # the actual damage radius, so they stay visually in sync if radius changes.
             blast_diameter = int(self.radius * 2)
             self.explosion_frames = [
-                pygame.transform.scale(frame, (blast_diameter, blast_diameter))
+                scale_surface(frame, blast_diameter, blast_diameter)
                 for frame in explosion_frames_raw
             ]
-            self.blast_radius_image = pygame.transform.scale(blast_radius_raw, (blast_diameter, blast_diameter))
+            self.blast_radius_image = scale_surface(blast_radius_raw, blast_diameter, blast_diameter)
             self.blast_radius_image.set_alpha(60)  # Make the blast radius semi-transparent
-            shadow_image_raw = pygame.image.load("assets/misc/entity-shadow.png").convert_alpha()
+            shadow_image_raw = load_image("assets/misc/entity-shadow.png")
             self.shadow = make_shadow(shadow_image_raw, self.bomb_frames[0].get_width())
 
             self.image = self.bomb_frames[0]
@@ -120,7 +121,7 @@ class Bomb_PowerUp(PowerUp):
         self.damage = 120
         self.radius = 200
         self.pending_bombs = []  # newly-dropped bombs, harvested into a sprite group by main.py
-        self.UI_logo = pygame.image.load("assets/upgrade-cards/powerup-cards/bomb/card.png").convert_alpha()
+        self.UI_logo = load_image("assets/upgrade-cards/powerup-cards/bomb/card.png")
 
     def use_powerup(self):
         bomb = self.Bomb((self.player.x, self.player.y), self.damage, self.radius)
@@ -134,7 +135,7 @@ class Invincibility(PowerUp):
         super().__init__(player, duration, "Invincibility")
         self.text = "Power Up: Gain invincibility for 10 seconds"
         self.has_time_limit = True
-        self.UI_logo = pygame.image.load("assets/upgrade-cards/powerup-cards/invincibility/card.png").convert_alpha()
+        self.UI_logo = load_image("assets/upgrade-cards/powerup-cards/invincibility/card.png")
 
     def use_powerup(self):
         self.player.is_invincible = True
@@ -152,7 +153,7 @@ class SpeedBoost(PowerUp):
         self.speed_multiplier = 2
         self.has_time_limit = True
         self.original_speed = None
-        self.UI_logo = pygame.image.load("assets/upgrade-cards/powerup-cards/speed-boost/card.png").convert_alpha()
+        self.UI_logo = load_image("assets/upgrade-cards/powerup-cards/speed-boost/card.png")
         
     def use_powerup(self):
         if not self.is_active:

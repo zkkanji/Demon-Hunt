@@ -1,6 +1,10 @@
 import pygame
 import random
 from src.utils.sprite_utils import get_sprite_bounds, make_shadow
+from src.utils.assets import load_image, scale_surface
+
+
+_SHADOW_IMAGE = None
 
 class RockLandscaping:
 
@@ -12,7 +16,7 @@ class RockLandscaping:
             self.image_rect = self.image.get_rect(topleft=(x, y))
             bounds = get_sprite_bounds(self.image)
             self.rect = bounds.move(self.image_rect.topleft)
-            self.shadow_image_raw = pygame.image.load("assets/misc/entity-shadow.png").convert_alpha()
+            self.shadow_image_raw = _SHADOW_IMAGE
             self.shadow = make_shadow(self.shadow_image_raw, self.image.get_width())
             self.shadow.set_alpha(70)  
 
@@ -29,19 +33,23 @@ class RockLandscaping:
         self.terrain_width = max(screen.get_width(), display_info.current_w)
         self.terrain_height = max(screen.get_height(), display_info.current_h)
         self.rock_images_raw = [
-            pygame.image.load(f"assets/landscaping/rocks/rock{i}.png").convert_alpha()
+            load_image(f"assets/landscaping/rocks/rock{i}.png")
             for i in range(1, 7)
         ]
         self.rock_images = [
-            pygame.transform.scale(
+            scale_surface(
                 img,
-                (int(img.get_width() * rock_scale), int(img.get_height() * rock_scale)),
+                int(img.get_width() * rock_scale),
+                int(img.get_height() * rock_scale),
             )
             for img in self.rock_images_raw
         ]
         self.rocks = []
         self.rock_distance = 150
         self.avoid_rect = avoid_rect
+        global _SHADOW_IMAGE
+        if _SHADOW_IMAGE is None:
+            _SHADOW_IMAGE = load_image("assets/misc/entity-shadow.png")
 
     def generate_rocks(self):
         """Create a new non-overlapping set of rocks for the maximum terrain size."""

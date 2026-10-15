@@ -6,6 +6,7 @@ from src.utils.progressbar import ProgressBar
 from .sword_sweep import SwordSweep
 from src.utils.sprite_utils import get_sprite_bounds, make_shadow
 from src.constants import FPS
+from src.utils.assets import load_image, scale_surface
 
 class Devil1(Enemy):
     
@@ -16,98 +17,98 @@ class Devil1(Enemy):
         self.melee_sweeps = pygame.sprite.Group()  # Group to manage active melee sweeps
         #idle frames
         left_idle_raw_frames = [
-            pygame.image.load(f"assets/enemies/enemy1/left/idle/idle{i}.png")
+            load_image(f"assets/enemies/enemy1/left/idle/idle{i}.png")
             for i in range(1, 6)
         ]
         right_idle_raw_frames = [
-            pygame.image.load(f"assets/enemies/enemy1/right/idle/idle{i}.png")
+            load_image(f"assets/enemies/enemy1/right/idle/idle{i}.png")
             for i in range(1, 6)
         ]
         self.left_idle_frames = [
-            pygame.transform.scale(frame, (int(frame.get_width() * self.scale_factor), int(frame.get_height() * self.scale_factor)))
+            scale_surface(frame, int(frame.get_width() * self.scale_factor), int(frame.get_height() * self.scale_factor))
             for frame in left_idle_raw_frames
         ]
         self.right_idle_frames = [
-            pygame.transform.scale(frame, (int(frame.get_width() * self.scale_factor), int(frame.get_height() * self.scale_factor)))
+            scale_surface(frame, int(frame.get_width() * self.scale_factor), int(frame.get_height() * self.scale_factor))
             for frame in right_idle_raw_frames
         ]
 
         #hit frames
         left_hit_raw_frames = [
-            pygame.image.load(f"assets/enemies/enemy1/left/hit/hit{i}.png")
+            load_image(f"assets/enemies/enemy1/left/hit/hit{i}.png")
             for i in range(1, 8)
         ]
         right_hit_raw_frames = [
-            pygame.image.load(f"assets/enemies/enemy1/right/hit/hit{i}.png")
+            load_image(f"assets/enemies/enemy1/right/hit/hit{i}.png")
             for i in range(1, 8)
         ]
         self.left_hit_frames = [
-            pygame.transform.scale(frame, (int(frame.get_width() * self.scale_factor), int(frame.get_height() * self.scale_factor)))
+            scale_surface(frame, int(frame.get_width() * self.scale_factor), int(frame.get_height() * self.scale_factor))
             for frame in left_hit_raw_frames
         ]
         self.right_hit_frames = [
-            pygame.transform.scale(frame, (int(frame.get_width() * self.scale_factor), int(frame.get_height() * self.scale_factor)))
+            scale_surface(frame, int(frame.get_width() * self.scale_factor), int(frame.get_height() * self.scale_factor))
             for frame in right_hit_raw_frames
         ]
 
         #movement frames
         left_movement_raw_frames = [
-            pygame.image.load(f"assets/enemies/enemy1/left/movement/move{i}.png")
+            load_image(f"assets/enemies/enemy1/left/movement/move{i}.png")
             for i in range(1, 6)
         ]
         right_movement_raw_frames = [
-            pygame.image.load(f"assets/enemies/enemy1/right/movement/move{i}.png")
+            load_image(f"assets/enemies/enemy1/right/movement/move{i}.png")
             for i in range(1, 6)
         ]
         self.left_movement_frames = [
-            pygame.transform.scale(frame, (int(frame.get_width() * self.scale_factor), int(frame.get_height() * self.scale_factor)))
+            scale_surface(frame, int(frame.get_width() * self.scale_factor), int(frame.get_height() * self.scale_factor))
             for frame in left_movement_raw_frames
         ]
         self.right_movement_frames = [
-            pygame.transform.scale(frame, (int(frame.get_width() * self.scale_factor), int(frame.get_height() * self.scale_factor)))
+            scale_surface(frame, int(frame.get_width() * self.scale_factor), int(frame.get_height() * self.scale_factor))
             for frame in right_movement_raw_frames
         ]
 
         #attack frames
         left_attack_raw_frames = [
-            pygame.image.load(f"assets/enemies/enemy1/left/attack/attack{i}.png")
+            load_image(f"assets/enemies/enemy1/left/attack/attack{i}.png")
             for i in range(1, 10)
         ]
         right_attack_raw_frames = [
-            pygame.image.load(f"assets/enemies/enemy1/right/attack/attack{i}.png")
+            load_image(f"assets/enemies/enemy1/right/attack/attack{i}.png")
             for i in range(1, 10)
         ]
         self.left_attack_frames = [
-            pygame.transform.scale(frame, (int(frame.get_width() * self.scale_factor), int(frame.get_height() * self.scale_factor)))
+            scale_surface(frame, int(frame.get_width() * self.scale_factor), int(frame.get_height() * self.scale_factor))
             for frame in left_attack_raw_frames
         ]
         self.right_attack_frames = [
-            pygame.transform.scale(frame, (int(frame.get_width() * self.scale_factor), int(frame.get_height() * self.scale_factor)))
+            scale_surface(frame, int(frame.get_width() * self.scale_factor), int(frame.get_height() * self.scale_factor))
             for frame in right_attack_raw_frames
         ]
 
         #death frames
         death_frames_raw = [
-            pygame.image.load(f"assets/enemies/enemy1/death/death{i}.png")
+            load_image(f"assets/enemies/enemy1/death/death{i}.png")
             for i in range(1, 13)
         ]
         self.death_frames = [
-            pygame.transform.scale(frame, (int(frame.get_width() * self.scale_factor), int(frame.get_height() * self.scale_factor)))
+            scale_surface(frame, int(frame.get_width() * self.scale_factor), int(frame.get_height() * self.scale_factor))
             for frame in death_frames_raw
         ]
 
         #Attack melee sweep frames
         attack_sweep_scale = 4
         raw_sweep_frames = [
-            pygame.image.load(f"assets/misc/enemy1-melee-sweep/sweep{i}.png")
+            load_image(f"assets/misc/enemy1-melee-sweep/sweep{i}.png")
             for i in range(1, 14)
         ]
         self.sweep_frames = [
-            pygame.transform.scale(frame, (int(frame.get_width() * attack_sweep_scale), int(frame.get_height() * attack_sweep_scale)))
+            scale_surface(frame, int(frame.get_width() * attack_sweep_scale), int(frame.get_height() * attack_sweep_scale))
             for frame in raw_sweep_frames
         ]
 
-        self.shadow_image_raw = pygame.image.load("assets/misc/entity-shadow.png").convert_alpha()
+        self.shadow_image_raw = load_image("assets/misc/entity-shadow.png")
         self.shadow = make_shadow(self.shadow_image_raw, self.right_idle_frames[0].get_width())
 
         # Animation sequences (back and forth)

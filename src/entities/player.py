@@ -1,6 +1,7 @@
 import pygame 
 from .base_entity import BaseEntity
 from src.utils.sprite_utils import get_sprite_bounds, make_shadow
+from src.utils.assets import load_image
 
 class Player(BaseEntity):
 
@@ -34,15 +35,15 @@ class Player(BaseEntity):
 
         #No Weapon Frames Raw (Idle Left Right and Movement)
         blank_idle_right_raw = [
-            pygame.image.load(f"assets/player/noWeapon/right/idle/f{i}.png")
+            load_image(f"assets/player/noWeapon/right/idle/f{i}.png")
             for i in range(1, 6)
         ]
         blank_idle_left_raw = [
-            pygame.image.load(f"assets/player/noWeapon/left/idle/f{i}.png")
+            load_image(f"assets/player/noWeapon/left/idle/f{i}.png")
             for i in range(1, 6)
         ]
         blank_movement = [
-            pygame.image.load(f"assets/player/noWeapon/movement/f{i}.png")
+            load_image(f"assets/player/noWeapon/movement/f{i}.png")
             for i in range(1, 6)
         ]
 
@@ -62,19 +63,19 @@ class Player(BaseEntity):
 
         #Blaster Raw Frames (Left and Right)
         blaster_idle_right_raw =[
-            pygame.image.load(f"assets/player/blaster/blaster-right/idle/f{i}.png")
+            load_image(f"assets/player/blaster/blaster-right/idle/f{i}.png")
             for i in range(1, 6)
         ]
         blaster_idle_left_raw = [
-            pygame.image.load(f"assets/player/blaster/blaster-left/idle/f{i}.png")
+            load_image(f"assets/player/blaster/blaster-left/idle/f{i}.png")
             for i in range(1, 6)
         ]
         blaster_move_right_raw = [
-            pygame.image.load(f"assets/player/blaster/blaster-right/movement/f{i}.png")
+            load_image(f"assets/player/blaster/blaster-right/movement/f{i}.png")
             for i in range(1, 6)
         ]
         blaster_move_left_raw = [
-            pygame.image.load(f"assets/player/blaster/blaster-left/movement/f{i}.png")
+            load_image(f"assets/player/blaster/blaster-left/movement/f{i}.png")
             for i in range(1, 6)
         ]
 
@@ -98,19 +99,19 @@ class Player(BaseEntity):
 
         # Load sword frame sets (left and right)
         sword_idle_left_raw = [
-            pygame.image.load(f"assets/player/sword/sword-left/idle-left/f{i}.png")
+            load_image(f"assets/player/sword/sword-left/idle-left/f{i}.png")
             for i in range(1, 6)
         ]
         sword_idle_right_raw = [
-            pygame.image.load(f"assets/player/sword/sword-right/idle-right/f{i}.png")
+            load_image(f"assets/player/sword/sword-right/idle-right/f{i}.png")
             for i in range(1, 6)
         ]
         sword_walk_left_raw = [
-            pygame.image.load(f"assets/player/sword/sword-left/movement-left/f{i}.png")
+            load_image(f"assets/player/sword/sword-left/movement-left/f{i}.png")
             for i in range(1, 6)
         ]
         sword_walk_right_raw = [
-            pygame.image.load(f"assets/player/sword/sword-right/movement-right/f{i}.png")
+            load_image(f"assets/player/sword/sword-right/movement-right/f{i}.png")
             for i in range(1, 6)
         ]
         
@@ -134,19 +135,19 @@ class Player(BaseEntity):
 
         #Shotgun Raw Frames Idle/Walking
         shotgun_idle_right_raw = [
-            pygame.image.load(f"assets/player/shotgun/shotgun-right/idle/f{i}.png")
+            load_image(f"assets/player/shotgun/shotgun-right/idle/f{i}.png")
             for i in range(1, 6)
         ]
         shotgun_idle_left_raw = [
-            pygame.image.load(f"assets/player/shotgun/shotgun-left/idle/f{i}.png")
+            load_image(f"assets/player/shotgun/shotgun-left/idle/f{i}.png")
             for i in range(1, 6)
         ]
         shotgun_walk_right_raw = [
-            pygame.image.load(f"assets/player/shotgun/shotgun-right/movement/f{i}.png")
+            load_image(f"assets/player/shotgun/shotgun-right/movement/f{i}.png")
             for i in range(1, 6)
         ]
         shotgun_walk_left_raw = [
-            pygame.image.load(f"assets/player/shotgun/shotgun-left/movement/f{i}.png")
+            load_image(f"assets/player/shotgun/shotgun-left/movement/f{i}.png")
             for i in range(1, 6)
         ]
 
@@ -170,11 +171,11 @@ class Player(BaseEntity):
 
         # Load sword attack frames (left and right)
         sword_attack_left_raw = [
-            pygame.image.load(f"assets/player/sword/sword-left/attack-left/f{i}.png")
+            load_image(f"assets/player/sword/sword-left/attack-left/f{i}.png")
             for i in range(1, 10)  # 9 attack frames
         ]
         sword_attack_right_raw = [
-            pygame.image.load(f"assets/player/sword/sword-right/attack-right/f{i}.png")
+            load_image(f"assets/player/sword/sword-right/attack-right/f{i}.png")
             for i in range(1, 10)  # 9 attack frames
         ]
 
@@ -190,19 +191,19 @@ class Player(BaseEntity):
 
         # Raw Boomerang Frames
         boomerang_idle_left_raw = [
-            pygame.image.load(f"assets/player/boomerang/left/idle/f{i}.png")
+            load_image(f"assets/player/boomerang/left/idle/f{i}.png")
             for i in range(1, 6)
             ] # Left Idle Frames
         boomerang_idle_right_raw = [
-            pygame.image.load(f"assets/player/boomerang/right/idle/f{i}.png")
+            load_image(f"assets/player/boomerang/right/idle/f{i}.png")
             for i in range(1, 6)
             ] # Right Idle Frames
         boomerang_move_left_raw = [
-            pygame.image.load(f"assets/player/boomerang/left/movement/f{i}.png")
+            load_image(f"assets/player/boomerang/left/movement/f{i}.png")
             for i in range(1, 6)
             ] # Left Movement Frames
         boomerang_move_right_raw = [
-            pygame.image.load(f"assets/player/boomerang/right/movement/f{i}.png")
+            load_image(f"assets/player/boomerang/right/movement/f{i}.png")
             for i in range(1, 6)
             ] # Right Movement Frames
 
@@ -228,7 +229,7 @@ class Player(BaseEntity):
 
         # Death Frames
         death_frames_raw = [
-            pygame.image.load(f"assets/player/death/f{i}.png")
+            load_image(f"assets/player/death/f{i}.png")
             for i in range(1, 14)
         ]
         self.death_frames = [
@@ -238,23 +239,23 @@ class Player(BaseEntity):
 
         # Right hit frames
         sword_hit_right_raw = [
-            pygame.image.load(f"assets/player/sword/sword-right/hit-right/f{i}.png")
+            load_image(f"assets/player/sword/sword-right/hit-right/f{i}.png")
             for i in range (1, 6)
         ]
         blaster_hit_right_raw = [
-            pygame.image.load(f"assets/player/blaster/blaster-right/hit/f{i}.png")
+            load_image(f"assets/player/blaster/blaster-right/hit/f{i}.png")
             for i in range (1, 6)
         ]
         shotgun_hit_right_raw = [
-            pygame.image.load(f"assets/player/shotgun/shotgun-right/hit/f{i}.png")
+            load_image(f"assets/player/shotgun/shotgun-right/hit/f{i}.png")
             for i in range (1, 6)
         ]
         boomerang_hit_right_raw = [
-            pygame.image.load(f"assets/player/boomerang/right/hit/f{i}.png")
+            load_image(f"assets/player/boomerang/right/hit/f{i}.png")
             for i in range (1, 8)
         ]
         blank_hit_right_raw = [
-            pygame.image.load(f"assets/player/noWeapon/right/hit/f{i}.png")
+            load_image(f"assets/player/noWeapon/right/hit/f{i}.png")
             for i in range (1, 8)
         ]
         self.sword_hit_right = [
@@ -280,23 +281,23 @@ class Player(BaseEntity):
 
         # Left hit frames
         sword_hit_left_raw = [
-            pygame.image.load(f"assets/player/sword/sword-left/hit-left/f{i}.png")
+            load_image(f"assets/player/sword/sword-left/hit-left/f{i}.png")
             for i in range (1, 6)
         ]
         blaster_hit_left_raw = [
-            pygame.image.load(f"assets/player/blaster/blaster-left/hit/f{i}.png")
+            load_image(f"assets/player/blaster/blaster-left/hit/f{i}.png")
             for i in range (1, 6)
         ]
         shotgun_hit_left_raw = [
-            pygame.image.load(f"assets/player/shotgun/shotgun-left/hit/f{i}.png")
+            load_image(f"assets/player/shotgun/shotgun-left/hit/f{i}.png")
             for i in range (1, 6)
         ]
         boomerang_hit_left_raw = [
-            pygame.image.load(f"assets/player/boomerang/left/hit/f{i}.png")
+            load_image(f"assets/player/boomerang/left/hit/f{i}.png")
             for i in range (1, 8)
         ]
         blank_hit_left_raw = [
-            pygame.image.load(f"assets/player/noWeapon/left/hit/f{i}.png")
+            load_image(f"assets/player/noWeapon/left/hit/f{i}.png")
             for i in range (1, 8)
         ]
         self.sword_hit_left = [
@@ -321,7 +322,7 @@ class Player(BaseEntity):
         ]
 
         blaster_shoot_right_raw = [
-            pygame.image.load(f"assets/player/blaster/blaster-right/shoot/f{i}.png")
+            load_image(f"assets/player/blaster/blaster-right/shoot/f{i}.png")
             for i in range(1, 4)
         ]
         self.blaster_shoot = [
@@ -330,7 +331,7 @@ class Player(BaseEntity):
         ]
 
         blaster_shoot_left_raw = [
-            pygame.image.load(f"assets/player/blaster/blaster-left/shoot/f{i}.png")
+            load_image(f"assets/player/blaster/blaster-left/shoot/f{i}.png")
             for i in range(1, 4)
         ]
         self.blaster_shoot_left = [
@@ -339,7 +340,7 @@ class Player(BaseEntity):
         ]
 
         shotgun_shoot_right_raw = [
-            pygame.image.load(f"assets/player/shotgun/shotgun-right/shoot/f{i}.png")
+            load_image(f"assets/player/shotgun/shotgun-right/shoot/f{i}.png")
             for i in range(1, 4)
         ]
         self.shotgun_shoot_right = [
@@ -348,7 +349,7 @@ class Player(BaseEntity):
         ]
 
         shotgun_shoot_left_raw = [
-            pygame.image.load(f"assets/player/shotgun/shotgun-left/shoot/f{i}.png")
+            load_image(f"assets/player/shotgun/shotgun-left/shoot/f{i}.png")
             for i in range(1, 4)
         ]
         self.shotgun_shoot_left = [
@@ -356,7 +357,7 @@ class Player(BaseEntity):
             for frame in shotgun_shoot_left_raw
         ]
 
-        self.shadow_image_raw = pygame.image.load("assets/misc/entity-shadow.png").convert_alpha()
+        self.shadow_image_raw = load_image("assets/misc/entity-shadow.png")
         self.shadow = make_shadow(self.shadow_image_raw, self.blaster_idle_right[0].get_width()*0.7)
 
         self.frame_counter = 0

@@ -20,6 +20,7 @@ from src.utils.rock_placement import RockLandscaping
 from src.menu_stuff.menu_buttons import MenuButton
 from src.menu_stuff.menu_text import MenuText
 from src.utils.particles import create_hit_burst
+from src.utils.assets import load_image
 
 pygame.init()
 
@@ -39,8 +40,8 @@ CONTROLS_SCREEN = "controls"
 current_state = PLAYING if "--start-game" in sys.argv else TITLE_SCREEN
 
 # MENU BUTTON INITIALIZATION
-title_image = pygame.transform.scale(pygame.image.load("assets/menu/title.png").convert_alpha(), (400, 400)) #Title Card
-gameover_image = pygame.transform.scale(pygame.image.load("assets/menu/gameover.png").convert_alpha(), (400, 400)) #Game Over Card
+title_image = pygame.transform.scale(load_image("assets/menu/title.png"), (400, 400)) #Title Card
+gameover_image = pygame.transform.scale(load_image("assets/menu/gameover.png"), (400, 400)) #Game Over Card
 play_button = MenuButton("play", MIN_WIDTH // 2 - 100, 270, "start") # Opening Menu Play Button
 quit_button = MenuButton("quit", MIN_WIDTH // 2 - 100, 410, "quit") # Opening Menu Quit Button
 replay_button = MenuButton("replay", MIN_WIDTH // 2 - 100, 300, "replay")
@@ -124,9 +125,9 @@ player.equip_weapon(player.weapons_inventory["gun"])  # Equip the blaster as the
 ui_manager = UImanager(screen, player)
 
 # Load reticles for custom cursor
-gun_reticle = pygame.image.load("assets/misc/gun-reticle.png")
+gun_reticle = load_image("assets/misc/gun-reticle.png")
 gun_reticle = pygame.transform.scale(gun_reticle, (50, 50))
-melee_reticle = pygame.image.load("assets/misc/melee-reticle.png")
+melee_reticle = load_image("assets/misc/melee-reticle.png")
 melee_reticle = pygame.transform.scale(melee_reticle, (50, 50))
 pause_snapshot = None
 

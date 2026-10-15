@@ -2,6 +2,7 @@ import pygame
 import math
 from .gun_base import GunBase
 from src.entities.projectile import Projectile
+from src.utils.assets import load_image, scale_surface
 
 class Shotgun(GunBase):
 
@@ -12,8 +13,8 @@ class Shotgun(GunBase):
         self.projectile_spread_angle = 7.5  # degrees
         self.num_projectiles_per_shot = 3
         self.projectiles = pygame.sprite.Group()  # Group to manage active projectiles
-        projectile_image_raw = pygame.image.load("assets/misc/shotgun-projectile.png")  
-        self.projectile_image = pygame.transform.scale(projectile_image_raw, (projectile_image_raw.get_width() * projectile_scale, projectile_image_raw.get_height() * projectile_scale))
+        projectile_image_raw = load_image("assets/misc/shotgun-projectile.png")
+        self.projectile_image = scale_surface(projectile_image_raw, int(projectile_image_raw.get_width() * projectile_scale), int(projectile_image_raw.get_height() * projectile_scale))
     
     def attack(self, player_pos, direction):
         if self.is_reloading:

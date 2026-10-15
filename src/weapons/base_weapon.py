@@ -1,5 +1,3 @@
-import pygame
-import math
 import random
 from abc import ABC, abstractmethod
 

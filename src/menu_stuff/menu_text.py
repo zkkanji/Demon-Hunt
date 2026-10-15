@@ -1,5 +1,6 @@
 import pygame
 from src.constants import MIN_WIDTH, MIN_HEIGHT, UI_COLOR
+from src.utils.assets import load_image
 
 class MenuText: 
 
@@ -30,13 +31,13 @@ class MenuText:
 
         #Controls UI
         scale = 5
-        self.controls1 = pygame.image.load(f"assets/menu/controls/c1.png")
+        self.controls1 = load_image("assets/menu/controls/c1.png")
         self.controls1 = pygame.transform.scale(self.controls1, (self.controls1.get_width() * scale, self.controls1.get_height() * scale))
-        self.controls2 = pygame.image.load(f"assets/menu/controls/c2.png")
+        self.controls2 = load_image("assets/menu/controls/c2.png")
         self.controls2 = pygame.transform.scale(self.controls2, (self.controls2.get_width() * scale, self.controls2.get_height() * scale))  
-        self.controls3 = pygame.image.load(f"assets/menu/controls/c3.png")
+        self.controls3 = load_image("assets/menu/controls/c3.png")
         self.controls3 = pygame.transform.scale(self.controls3, (self.controls3.get_width() * scale, self.controls3.get_height() * scale))
-        self.controls4 = pygame.image.load(f"assets/menu/controls/c4.png")
+        self.controls4 = load_image("assets/menu/controls/c4.png")
         self.controls4 = pygame.transform.scale(self.controls4, (self.controls4.get_width() * scale, self.controls4.get_height() * scale))
         cont_xpos = MIN_WIDTH // 2 - 300
         cont_ypos = MIN_HEIGHT // 2 - 300

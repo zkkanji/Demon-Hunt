@@ -1,5 +1,6 @@
 import pygame
 from src.utils.sprite_utils import get_sprite_bounds
+from src.utils.assets import load_image, scale_surface
 
 class ProgressBar:
     def __init__ (self, x, y, max_value, sprite_path, sprite_scalex, sprite_scaley, xmargin=2, ymargin=2, fill_color=(255, 0, 0)):
@@ -7,8 +8,12 @@ class ProgressBar:
         self.y = y
         self.max_value = max_value
         self.current_value = max_value
-        sprite_bar = pygame.image.load(sprite_path)
-        self.sprite_container = pygame.transform.scale(sprite_bar, (int(sprite_bar.get_width() * sprite_scalex), int(sprite_bar.get_height() * sprite_scaley)))
+        sprite_bar = load_image(sprite_path)
+        self.sprite_container = scale_surface(
+            sprite_bar,
+            int(sprite_bar.get_width() * sprite_scalex),
+            int(sprite_bar.get_height() * sprite_scaley),
+        )
         self.fill_color = fill_color
         
         # Store full sprite container dimensions for positioning/centering
