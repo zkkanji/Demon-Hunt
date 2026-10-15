@@ -67,7 +67,6 @@ def draw_menu_buttons(surface, buttons):
     for button in buttons:
         button.draw(surface)
 
-
 def layout_menu_buttons():
     screen_width = screen.get_width()
     screen_height = screen.get_height()
@@ -121,7 +120,6 @@ player.melee_inventory.append(boomerang)
 player.weapon_swap(shotgun) 
 player.weapon_swap(boomerang) 
 player.equip_weapon(player.weapons_inventory["gun"])  # Equip the blaster as the current weapon
-
 ui_manager = UImanager(screen, player)
 
 # Load reticles for custom cursor

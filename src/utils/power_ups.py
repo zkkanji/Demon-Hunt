@@ -1,6 +1,6 @@
 import pygame
 from pygame.sprite import Sprite
-from src.utils.sprite_utils import make_shadow
+from src.utils.sprite_utils import get_sprite_bounds, make_shadow
 from src.utils.assets import load_image, scale_surface
 from abc import ABC, abstractmethod
 
@@ -66,6 +66,16 @@ class Bomb_PowerUp(PowerUp):
                 for frame in explosion_frames_raw
             ]
             self.blast_radius_image = scale_surface(blast_radius_raw, blast_diameter, blast_diameter)
+            self.blast_radius_bounds = get_sprite_bounds(self.blast_radius_image)
+            self.explosion_radius = min(
+                self.blast_radius_bounds.width,
+                self.blast_radius_bounds.height,
+            ) / 2
+            image_center = self.blast_radius_image.get_rect().center
+            self.explosion_center_offset = (
+                self.blast_radius_bounds.centerx - image_center[0],
+                self.blast_radius_bounds.centery - image_center[1],
+            )
             self.blast_radius_image.set_alpha(60)  # Make the blast radius semi-transparent
             shadow_image_raw = load_image("assets/misc/entity-shadow.png")
             self.shadow = make_shadow(shadow_image_raw, self.bomb_frames[0].get_width())
@@ -113,6 +123,16 @@ class Bomb_PowerUp(PowerUp):
                 shadow_rect = self.shadow.get_rect(midbottom=(self.rect.centerx, self.rect.bottom))
                 screen.blit(self.shadow, shadow_rect)
             screen.blit(self.image, self.rect)
+
+        def get_explosion_center(self):
+            return (
+                self.x + self.explosion_center_offset[0],
+                self.y + self.explosion_center_offset[1],
+            )
+
+        def get_blast_radius_rect(self):
+            image_rect = self.blast_radius_image.get_rect(center=(self.x, self.y))
+            return self.blast_radius_bounds.move(image_rect.topleft)
 
 
     def __init__(self, player, duration):

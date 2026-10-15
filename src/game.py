@@ -135,16 +135,28 @@ def check_player_drop_collision(player, drop):
     player_collision_rect = getattr(player, 'collision_rect', player.rect)
     return player_collision_rect.colliderect(drop.rect)
 
+def _circle_intersects_rect(center, radius, rect):
+    closest_x = max(rect.left, min(center[0], rect.right))
+    closest_y = max(rect.top, min(center[1], rect.bottom))
+    dx = center[0] - closest_x
+    dy = center[1] - closest_y
+    return dx * dx + dy * dy <= radius * radius
+
 def check_bomb_explosion_collisions(bombs, enemies, player, particle_group):
     for bomb in bombs:
         if bomb.state != "exploding":
             continue
 
+        bomb_center = bomb.get_explosion_center()
         for enemy in enemies:
             if enemy in bomb.damaged_entities:
                 continue
             enemy_collision_rect = getattr(enemy, 'collision_rect', enemy.rect)
-            if bomb.rect.colliderect(enemy_collision_rect):
+            if _circle_intersects_rect(
+                bomb_center,
+                bomb.explosion_radius,
+                enemy_collision_rect,
+            ):
                 enemy.take_damage(bomb.damage)
                 create_hit_burst(
                     particle_group,
@@ -156,7 +168,11 @@ def check_bomb_explosion_collisions(bombs, enemies, player, particle_group):
 
         if player not in bomb.damaged_entities:
             player_collision_rect = getattr(player, 'collision_rect', player.rect)
-            if bomb.rect.colliderect(player_collision_rect):
+            if _circle_intersects_rect(
+                bomb_center,
+                bomb.explosion_radius,
+                player_collision_rect,
+            ):
                 player.take_damage(bomb.damage)
                 create_hit_burst(
                     particle_group,
