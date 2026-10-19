@@ -11,6 +11,7 @@ from src.weapons.sword import Sword
 from src.weapons.boomerang import Boomerang
 from src.entities.devil1 import Devil1
 from src.entities.devil2 import Devil2
+from src.entities.devil3 import Devil3
 from src.game import check_projectile_collision, check_player_enemy_collision, advance_wave, get_enemy_spawn_position, check_enemy_enemy_collision, check_player_drop_collision, check_bomb_explosion_collisions, check_sword_projectile_collisions
 from src.utils.UImanager import UImanager
 from src.utils.upgrade_cards import player_upgrade_card, weapon_upgrade_card, weapon_unlock_card, power_up_card, weapon_inventory_upgrade_card
@@ -56,12 +57,10 @@ menu_text = MenuText(screen)  # Initialize MenuText with the screen
 def restart_game():
     os.execl(sys.executable, sys.executable, *sys.argv, "--start-game")
 
-
 def update_menu_buttons(buttons):
     mouse_pos = pygame.mouse.get_pos()
     for button in buttons:
         button.update(mouse_pos)
-
 
 def draw_menu_buttons(surface, buttons):
     for button in buttons:
@@ -102,7 +101,6 @@ def layout_menu_buttons():
         screen_width // 2 - death_quit_button.rect.width // 2,
         int(screen_height * 0.5),
     )
-
 
 layout_menu_buttons()
 
@@ -275,7 +273,7 @@ while running:
             enemy_spawn_timer += 1
             if enemy_spawn_timer >= enemy_spawn_rate and len(enemies) < game.MOST_ENEMIES_ON_SCREEN:
                 x, y = get_enemy_spawn_position()
-                enemy = random.choice([Devil1, Devil2])(x, y)
+                enemy = random.choice([Devil1, Devil2, Devil3])(x, y)
                 enemies.add(enemy)
                 enemies_spawned_this_wave += 1  # Increment spawned counter
                 enemy_spawn_timer = 0
