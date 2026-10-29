@@ -7,7 +7,7 @@ from src.utils.assets import load_image, scale_surface
 class Shotgun(GunBase):
 
     def __init__(self):
-        super().__init__(name = "Shotgun", damage = 15, is_automatic = False, ammo_limit=15, reload_time=1200, attack_cooldown=800, crit_mult=1.5)
+        super().__init__(name = "shotgun", damage = 15, is_automatic = False, ammo_limit=15, reload_time=1200, attack_cooldown=800, crit_mult=1.5)
         self.projectile_velocity = 12
         projectile_scale = 1.5
         self.projectile_spread_angle = 7.5  # degrees

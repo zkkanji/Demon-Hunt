@@ -4,9 +4,10 @@ from src.utils.particles import create_hit_burst
 
 game_score = 0
 wave_number = 0
+souls = 0
 max_enemies_current_wave = 0
 enemies_left_in_wave = max_enemies_current_wave
-ENEMIES_PER_WAVE = [5, 5, 7, 10, 11, 12, 14, 15, 17]
+ENEMIES_PER_WAVE =  [1] #[5, 5, 7, 10, 11, 12, 14, 15, 17]
 MOST_ENEMIES_ON_SCREEN = 10  # Max number of enemies to spawn at once for performance reasons
 WAVE_INTERVAL_TIME = 5000  # milliseconds (5 seconds) between waves
 wave_interval_timer = 0

@@ -6,7 +6,7 @@ from src.utils.assets import load_image, scale_surface
 
 class Boomerang(MeleeBase):
     def __init__(self, player=None):
-        super().__init__(name = "Boomerang", damage = 30, is_automatic = False, melee_range = 310, attack_cooldown = 500, crit_mult = 1.7)
+        super().__init__(name = "boomerang", damage = 30, is_automatic = False, melee_range = 310, attack_cooldown = 500, crit_mult = 1.7)
         self.boomerang_scale = 2
         projectile_image = load_image("assets/misc/boomerang-projectile.png")
         self.boomerang_image = scale_surface(projectile_image, int(projectile_image.get_width() * self.boomerang_scale), int(projectile_image.get_height() * self.boomerang_scale))

@@ -1,7 +1,7 @@
 import pygame 
 from .base_entity import BaseEntity
 from src.utils.sprite_utils import get_sprite_bounds, make_shadow
-from src.utils.assets import load_image
+from src.utils.assets import lazy_scaled_frames, load_image
 
 class Player(BaseEntity):
 
@@ -33,332 +33,56 @@ class Player(BaseEntity):
 
         #Player Design/Animation frames (Blaster or Sword)
 
-        #No Weapon Frames Raw (Idle Left Right and Movement)
-        blank_idle_right_raw = [
-            load_image(f"assets/player/noWeapon/right/idle/f{i}.png")
-            for i in range(1, 6)
-        ]
-        blank_idle_left_raw = [
-            load_image(f"assets/player/noWeapon/left/idle/f{i}.png")
-            for i in range(1, 6)
-        ]
-        blank_movement = [
-            load_image(f"assets/player/noWeapon/movement/f{i}.png")
-            for i in range(1, 6)
-        ]
+        self.blank_idle_right = lazy_scaled_frames("assets/player/noWeapon/right/idle/f{i}.png", range(1, 6), scale_factor)
+        self.blank_idle_left = lazy_scaled_frames("assets/player/noWeapon/left/idle/f{i}.png", range(1, 6), scale_factor)
+        self.blank_movement = lazy_scaled_frames("assets/player/noWeapon/movement/f{i}.png", range(1, 6), scale_factor)
 
-        #Scaled Blank Frames
-        self.blank_idle_right = [
-            pygame.transform.scale(frame, (int(frame.get_width() * scale_factor), int(frame.get_height() * scale_factor)))
-            for frame in blank_idle_right_raw
-        ]
-        self.blank_idle_left = [
-            pygame.transform.scale(frame, (int(frame.get_width() * scale_factor), int(frame.get_height() * scale_factor)))
-            for frame in blank_idle_left_raw
-        ]
-        self.blank_movement = [
-            pygame.transform.scale(frame, (int(frame.get_width() * scale_factor), int(frame.get_height() * scale_factor)))
-            for frame in blank_movement
-        ]
+        self.blaster_idle_right = lazy_scaled_frames("assets/player/blaster/blaster-right/idle/f{i}.png", range(1, 6), scale_factor)
+        self.blaster_idle_left = lazy_scaled_frames("assets/player/blaster/blaster-left/idle/f{i}.png", range(1, 6), scale_factor)
+        self.blaster_move_right = lazy_scaled_frames("assets/player/blaster/blaster-right/movement/f{i}.png", range(1, 6), scale_factor)
+        self.blaster_move_left = lazy_scaled_frames("assets/player/blaster/blaster-left/movement/f{i}.png", range(1, 6), scale_factor)
 
-        #Blaster Raw Frames (Left and Right)
-        blaster_idle_right_raw =[
-            load_image(f"assets/player/blaster/blaster-right/idle/f{i}.png")
-            for i in range(1, 6)
-        ]
-        blaster_idle_left_raw = [
-            load_image(f"assets/player/blaster/blaster-left/idle/f{i}.png")
-            for i in range(1, 6)
-        ]
-        blaster_move_right_raw = [
-            load_image(f"assets/player/blaster/blaster-right/movement/f{i}.png")
-            for i in range(1, 6)
-        ]
-        blaster_move_left_raw = [
-            load_image(f"assets/player/blaster/blaster-left/movement/f{i}.png")
-            for i in range(1, 6)
-        ]
+        self.sword_idle_left = lazy_scaled_frames("assets/player/sword/sword-left/idle-left/f{i}.png", range(1, 6), scale_factor)
+        self.sword_idle_right = lazy_scaled_frames("assets/player/sword/sword-right/idle-right/f{i}.png", range(1, 6), scale_factor)
+        self.sword_walk_left = lazy_scaled_frames("assets/player/sword/sword-left/movement-left/f{i}.png", range(1, 6), scale_factor)
+        self.sword_walk_right = lazy_scaled_frames("assets/player/sword/sword-right/movement-right/f{i}.png", range(1, 6), scale_factor)
 
-        # Scale blaster frames
-        self.blaster_idle_right = [
-            pygame.transform.scale(frame, (int(frame.get_width() * scale_factor), int(frame.get_height() * scale_factor)))
-            for frame in blaster_idle_right_raw
-        ]
-        self.blaster_idle_left = [
-            pygame.transform.scale(frame, (int(frame.get_width() * scale_factor), int(frame.get_height() * scale_factor)))
-            for frame in blaster_idle_left_raw
-        ]
-        self.blaster_move_right = [
-            pygame.transform.scale(frame, (int(frame.get_width() * scale_factor), int(frame.get_height() * scale_factor)))
-            for frame in blaster_move_right_raw
-        ]
-        self.blaster_move_left = [
-            pygame.transform.scale(frame, (int(frame.get_width() * scale_factor), int(frame.get_height() * scale_factor)))
-            for frame in blaster_move_left_raw
-        ]
+        self.shotgun_idle_right = lazy_scaled_frames("assets/player/shotgun/shotgun-right/idle/f{i}.png", range(1, 6), scale_factor)
+        self.shotgun_idle_left = lazy_scaled_frames("assets/player/shotgun/shotgun-left/idle/f{i}.png", range(1, 6), scale_factor)
+        self.shotgun_walk_right = lazy_scaled_frames("assets/player/shotgun/shotgun-right/movement/f{i}.png", range(1, 6), scale_factor)
+        self.shotgun_walk_left = lazy_scaled_frames("assets/player/shotgun/shotgun-left/movement/f{i}.png", range(1, 6), scale_factor)
 
-        # Load sword frame sets (left and right)
-        sword_idle_left_raw = [
-            load_image(f"assets/player/sword/sword-left/idle-left/f{i}.png")
-            for i in range(1, 6)
-        ]
-        sword_idle_right_raw = [
-            load_image(f"assets/player/sword/sword-right/idle-right/f{i}.png")
-            for i in range(1, 6)
-        ]
-        sword_walk_left_raw = [
-            load_image(f"assets/player/sword/sword-left/movement-left/f{i}.png")
-            for i in range(1, 6)
-        ]
-        sword_walk_right_raw = [
-            load_image(f"assets/player/sword/sword-right/movement-right/f{i}.png")
-            for i in range(1, 6)
-        ]
-        
-        # Scale sword frames
-        self.sword_idle_left = [
-            pygame.transform.scale(frame, (int(frame.get_width() * scale_factor), int(frame.get_height() * scale_factor)))
-            for frame in sword_idle_left_raw
-        ]
-        self.sword_idle_right = [
-            pygame.transform.scale(frame, (int(frame.get_width() * scale_factor), int(frame.get_height() * scale_factor)))
-            for frame in sword_idle_right_raw
-        ]
-        self.sword_walk_left = [
-            pygame.transform.scale(frame, (int(frame.get_width() * scale_factor), int(frame.get_height() * scale_factor)))
-            for frame in sword_walk_left_raw
-        ]
-        self.sword_walk_right = [
-            pygame.transform.scale(frame, (int(frame.get_width() * scale_factor), int(frame.get_height() * scale_factor)))
-            for frame in sword_walk_right_raw
-        ]
+        self.sword_attack_left = lazy_scaled_frames("assets/player/sword/sword-left/attack-left/f{i}.png", range(1, 10), scale_factor)
+        self.sword_attack_right = lazy_scaled_frames("assets/player/sword/sword-right/attack-right/f{i}.png", range(1, 10), scale_factor)
 
-        #Shotgun Raw Frames Idle/Walking
-        shotgun_idle_right_raw = [
-            load_image(f"assets/player/shotgun/shotgun-right/idle/f{i}.png")
-            for i in range(1, 6)
-        ]
-        shotgun_idle_left_raw = [
-            load_image(f"assets/player/shotgun/shotgun-left/idle/f{i}.png")
-            for i in range(1, 6)
-        ]
-        shotgun_walk_right_raw = [
-            load_image(f"assets/player/shotgun/shotgun-right/movement/f{i}.png")
-            for i in range(1, 6)
-        ]
-        shotgun_walk_left_raw = [
-            load_image(f"assets/player/shotgun/shotgun-left/movement/f{i}.png")
-            for i in range(1, 6)
-        ]
-
-        # Scale shotgun idle/walk frames
-        self.shotgun_idle_right = [
-            pygame.transform.scale(frame, (int(frame.get_width() * scale_factor), int(frame.get_height() * scale_factor)))
-            for frame in shotgun_idle_right_raw
-        ]
-        self.shotgun_idle_left = [
-            pygame.transform.scale(frame, (int(frame.get_width() * scale_factor), int(frame.get_height() * scale_factor)))
-            for frame in shotgun_idle_left_raw
-        ]
-        self.shotgun_walk_right = [
-            pygame.transform.scale(frame, (int(frame.get_width() * scale_factor), int(frame.get_height() * scale_factor)))
-            for frame in shotgun_walk_right_raw
-        ]
-        self.shotgun_walk_left = [
-            pygame.transform.scale(frame, (int(frame.get_width() * scale_factor), int(frame.get_height() * scale_factor)))
-            for frame in shotgun_walk_left_raw
-        ]
-
-        # Load sword attack frames (left and right)
-        sword_attack_left_raw = [
-            load_image(f"assets/player/sword/sword-left/attack-left/f{i}.png")
-            for i in range(1, 10)  # 9 attack frames
-        ]
-        sword_attack_right_raw = [
-            load_image(f"assets/player/sword/sword-right/attack-right/f{i}.png")
-            for i in range(1, 10)  # 9 attack frames
-        ]
-
-        # Scale sword attack frames
-        self.sword_attack_left = [
-            pygame.transform.scale(frame, (int(frame.get_width() * scale_factor), int(frame.get_height() * scale_factor)))
-            for frame in sword_attack_left_raw
-        ]
-        self.sword_attack_right = [
-            pygame.transform.scale(frame, (int(frame.get_width() * scale_factor), int(frame.get_height() * scale_factor)))
-            for frame in sword_attack_right_raw
-        ]
-
-        # Raw Boomerang Frames
-        boomerang_idle_left_raw = [
-            load_image(f"assets/player/boomerang/left/idle/f{i}.png")
-            for i in range(1, 6)
-            ] # Left Idle Frames
-        boomerang_idle_right_raw = [
-            load_image(f"assets/player/boomerang/right/idle/f{i}.png")
-            for i in range(1, 6)
-            ] # Right Idle Frames
-        boomerang_move_left_raw = [
-            load_image(f"assets/player/boomerang/left/movement/f{i}.png")
-            for i in range(1, 6)
-            ] # Left Movement Frames
-        boomerang_move_right_raw = [
-            load_image(f"assets/player/boomerang/right/movement/f{i}.png")
-            for i in range(1, 6)
-            ] # Right Movement Frames
-
-        # Scaled Boomerang Frames
-        self.boomerang_idle_left = [
-            pygame.transform.scale(frame, (int(frame.get_width() * scale_factor), int(frame.get_height() * scale_factor)))
-            for frame in boomerang_idle_left_raw
-        ]
-        self.boomerang_idle_right = [
-            pygame.transform.scale(frame, (int(frame.get_width() * scale_factor), int(frame.get_height() * scale_factor)))
-            for frame in boomerang_idle_right_raw
-        ]
-        self.boomerang_move_left = [
-            pygame.transform.scale(frame, (int(frame.get_width() * scale_factor), int(frame.get_height() * scale_factor)))
-            for frame in boomerang_move_left_raw
-        ]
-        self.boomerang_move_right = [
-            pygame.transform.scale(frame, (int(frame.get_width() * scale_factor), int(frame.get_height() * scale_factor)))
-            for frame in boomerang_move_right_raw
-        ]
+        self.boomerang_idle_left = lazy_scaled_frames("assets/player/boomerang/left/idle/f{i}.png", range(1, 6), scale_factor)
+        self.boomerang_idle_right = lazy_scaled_frames("assets/player/boomerang/right/idle/f{i}.png", range(1, 6), scale_factor)
+        self.boomerang_move_left = lazy_scaled_frames("assets/player/boomerang/left/movement/f{i}.png", range(1, 6), scale_factor)
+        self.boomerang_move_right = lazy_scaled_frames("assets/player/boomerang/right/movement/f{i}.png", range(1, 6), scale_factor)
 
 
 
-        # Death Frames
-        death_frames_raw = [
-            load_image(f"assets/player/death/f{i}.png")
-            for i in range(1, 14)
-        ]
-        self.death_frames = [
-            pygame.transform.scale(frame, (int(frame.get_width() * scale_factor), int(frame.get_height() * scale_factor)))
-            for frame in death_frames_raw
-        ]
+        self.death_frames = lazy_scaled_frames("assets/player/death/f{i}.png", range(1, 14), scale_factor)
 
-        # Right hit frames
-        sword_hit_right_raw = [
-            load_image(f"assets/player/sword/sword-right/hit-right/f{i}.png")
-            for i in range (1, 6)
-        ]
-        blaster_hit_right_raw = [
-            load_image(f"assets/player/blaster/blaster-right/hit/f{i}.png")
-            for i in range (1, 6)
-        ]
-        shotgun_hit_right_raw = [
-            load_image(f"assets/player/shotgun/shotgun-right/hit/f{i}.png")
-            for i in range (1, 6)
-        ]
-        boomerang_hit_right_raw = [
-            load_image(f"assets/player/boomerang/right/hit/f{i}.png")
-            for i in range (1, 8)
-        ]
-        blank_hit_right_raw = [
-            load_image(f"assets/player/noWeapon/right/hit/f{i}.png")
-            for i in range (1, 8)
-        ]
-        self.sword_hit_right = [
-            pygame.transform.scale(frame, (int(frame.get_width() * scale_factor), int(frame.get_height() * scale_factor)))
-            for frame in sword_hit_right_raw
-        ]
-        self.blaster_hit_right = [
-            pygame.transform.scale(frame, (int(frame.get_width() * scale_factor), int(frame.get_height() * scale_factor)))
-            for frame in blaster_hit_right_raw
-        ]
-        self.shotgun_hit_right = [
-            pygame.transform.scale(frame, (int(frame.get_width() * scale_factor), int(frame.get_height() * scale_factor)))
-            for frame in shotgun_hit_right_raw
-        ]
-        self.boomerang_hit_right = [
-            pygame.transform.scale(frame, (int(frame.get_width() * scale_factor), int(frame.get_height() * scale_factor)))
-            for frame in boomerang_hit_right_raw
-        ]
-        self.blank_hit_right = [
-            pygame.transform.scale(frame, (int(frame.get_width() * scale_factor), int(frame.get_height() * scale_factor)))
-            for frame in blank_hit_right_raw
-        ]
+        self.sword_hit_right = lazy_scaled_frames("assets/player/sword/sword-right/hit-right/f{i}.png", range(1, 6), scale_factor)
+        self.blaster_hit_right = lazy_scaled_frames("assets/player/blaster/blaster-right/hit/f{i}.png", range(1, 6), scale_factor)
+        self.shotgun_hit_right = lazy_scaled_frames("assets/player/shotgun/shotgun-right/hit/f{i}.png", range(1, 6), scale_factor)
+        self.boomerang_hit_right = lazy_scaled_frames("assets/player/boomerang/right/hit/f{i}.png", range(1, 8), scale_factor)
+        self.blank_hit_right = lazy_scaled_frames("assets/player/noWeapon/right/hit/f{i}.png", range(1, 8), scale_factor)
 
-        # Left hit frames
-        sword_hit_left_raw = [
-            load_image(f"assets/player/sword/sword-left/hit-left/f{i}.png")
-            for i in range (1, 6)
-        ]
-        blaster_hit_left_raw = [
-            load_image(f"assets/player/blaster/blaster-left/hit/f{i}.png")
-            for i in range (1, 6)
-        ]
-        shotgun_hit_left_raw = [
-            load_image(f"assets/player/shotgun/shotgun-left/hit/f{i}.png")
-            for i in range (1, 6)
-        ]
-        boomerang_hit_left_raw = [
-            load_image(f"assets/player/boomerang/left/hit/f{i}.png")
-            for i in range (1, 8)
-        ]
-        blank_hit_left_raw = [
-            load_image(f"assets/player/noWeapon/left/hit/f{i}.png")
-            for i in range (1, 8)
-        ]
-        self.sword_hit_left = [
-            pygame.transform.scale(frame, (int(frame.get_width() * scale_factor), int(frame.get_height() * scale_factor)))  
-            for frame in sword_hit_left_raw
-        ]
-        self.blaster_hit_left = [
-            pygame.transform.scale(frame, (int(frame.get_width() * scale_factor), int(frame.get_height() * scale_factor)))
-            for frame in blaster_hit_left_raw
-        ]
-        self.shotgun_hit_left = [
-            pygame.transform.scale(frame, (int(frame.get_width() * scale_factor), int(frame.get_height() * scale_factor)))
-            for frame in shotgun_hit_left_raw
-        ]
-        self.boomerang_hit_left = [
-            pygame.transform.scale(frame, (int(frame.get_width() * scale_factor), int(frame.get_height() * scale_factor)))
-            for frame in boomerang_hit_left_raw
-        ]
-        self.blank_hit_left = [
-            pygame.transform.scale(frame, (int(frame.get_width() * scale_factor), int(frame.get_height() * scale_factor)))
-            for frame in blank_hit_left_raw
-        ]
+        self.sword_hit_left = lazy_scaled_frames("assets/player/sword/sword-left/hit-left/f{i}.png", range(1, 6), scale_factor)
+        self.blaster_hit_left = lazy_scaled_frames("assets/player/blaster/blaster-left/hit/f{i}.png", range(1, 6), scale_factor)
+        self.shotgun_hit_left = lazy_scaled_frames("assets/player/shotgun/shotgun-left/hit/f{i}.png", range(1, 6), scale_factor)
+        self.boomerang_hit_left = lazy_scaled_frames("assets/player/boomerang/left/hit/f{i}.png", range(1, 8), scale_factor)
+        self.blank_hit_left = lazy_scaled_frames("assets/player/noWeapon/left/hit/f{i}.png", range(1, 8), scale_factor)
 
-        blaster_shoot_right_raw = [
-            load_image(f"assets/player/blaster/blaster-right/shoot/f{i}.png")
-            for i in range(1, 4)
-        ]
-        self.blaster_shoot = [
-            pygame.transform.scale(frame, (int(frame.get_width() * scale_factor), int(frame.get_height() * scale_factor)))
-            for frame in blaster_shoot_right_raw
-        ]
-
-        blaster_shoot_left_raw = [
-            load_image(f"assets/player/blaster/blaster-left/shoot/f{i}.png")
-            for i in range(1, 4)
-        ]
-        self.blaster_shoot_left = [
-            pygame.transform.scale(frame, (int(frame.get_width() * scale_factor), int(frame.get_height() * scale_factor)))
-            for frame in blaster_shoot_left_raw
-        ]
-
-        shotgun_shoot_right_raw = [
-            load_image(f"assets/player/shotgun/shotgun-right/shoot/f{i}.png")
-            for i in range(1, 4)
-        ]
-        self.shotgun_shoot_right = [
-            pygame.transform.scale(frame, (int(frame.get_width() * scale_factor), int(frame.get_height() * scale_factor)))
-            for frame in shotgun_shoot_right_raw
-        ]
-
-        shotgun_shoot_left_raw = [
-            load_image(f"assets/player/shotgun/shotgun-left/shoot/f{i}.png")
-            for i in range(1, 4)
-        ]
-        self.shotgun_shoot_left = [
-            pygame.transform.scale(frame, (int(frame.get_width() * scale_factor), int(frame.get_height() * scale_factor)))
-            for frame in shotgun_shoot_left_raw
-        ]
+        self.blaster_shoot = lazy_scaled_frames("assets/player/blaster/blaster-right/shoot/f{i}.png", range(1, 4), scale_factor)
+        self.blaster_shoot_left = lazy_scaled_frames("assets/player/blaster/blaster-left/shoot/f{i}.png", range(1, 4), scale_factor)
+        self.shotgun_shoot_right = lazy_scaled_frames("assets/player/shotgun/shotgun-right/shoot/f{i}.png", range(1, 4), scale_factor)
+        self.shotgun_shoot_left = lazy_scaled_frames("assets/player/shotgun/shotgun-left/shoot/f{i}.png", range(1, 4), scale_factor)
 
         self.shadow_image_raw = load_image("assets/misc/entity-shadow.png")
-        self.shadow = make_shadow(self.shadow_image_raw, self.blaster_idle_right[0].get_width()*0.7)
+        self.shadow = make_shadow(self.shadow_image_raw, self.blank_idle_right[0].get_width()*0.7)
 
         self.frame_counter = 0
         self.hit_frame_counter = 0
@@ -384,9 +108,8 @@ class Player(BaseEntity):
         self.hit_sequence = [0, 1, 2, 3, 4, 3, 2, 1, 0]
         self.hit_animation_speed = 1  # Frame speed for hit animation
 
-        # Set initial image to first sword idle right frame BEFORE creating rect
-        # Player starts with sword equipped visually (even if no weapon assigned)
-        self.image = self.sword_idle_right[0]
+        # Use a neutral frame until the first equipped weapon is updated.
+        self.image = self.blank_idle_right[0]
         
         # Create collision rect from actual sprite bounds (crop transparent padding)
         bounds = get_sprite_bounds(self.image)
@@ -458,27 +181,27 @@ class Player(BaseEntity):
         if self.weapon_equipped:
             if self.weapon_equipped.name == "Boomerang" and not self.weapon_in_hand:
                 return self.blank_idle_left if self.cursor_side == "left" else self.blank_idle_right
-            elif self.weapon_equipped.name == "Blaster":
+            elif self.weapon_equipped.name == "blaster":
                 return self.blaster_idle_left if self.cursor_side == "left" else self.blaster_idle_right
-            elif self.weapon_equipped.name == "Shotgun":
+            elif self.weapon_equipped.name == "shotgun":
                 return self.shotgun_idle_left if self.cursor_side == "left" else self.shotgun_idle_right
-            elif self.weapon_equipped.name == "Sword":
+            elif self.weapon_equipped.name == "sword":
                 return self.sword_idle_left if self.cursor_side == "left" else self.sword_idle_right
-            elif self.weapon_equipped.name == "Boomerang":
+            elif self.weapon_equipped.name == "boomerang":
                 return self.boomerang_idle_left if self.cursor_side == "left" else self.boomerang_idle_right
 
     def get_walk_frames(self):
         """Get walk frame set based on equipped weapon and cursor side."""
         if self.weapon_equipped:
-            if self.weapon_equipped.name == "Boomerang" and not self.weapon_in_hand:
+            if self.weapon_equipped.name == "boomerang" and not self.weapon_in_hand:
                 return self.blank_movement
-            elif self.weapon_equipped.name == "Blaster":
+            elif self.weapon_equipped.name == "blaster":
                 return self.blaster_move_left if self.cursor_side == "left" else self.blaster_move_right
-            elif self.weapon_equipped.name == "Shotgun":
+            elif self.weapon_equipped.name == "shotgun":
                 return self.shotgun_walk_left if self.cursor_side == "left" else self.shotgun_walk_right
-            elif self.weapon_equipped.name == "Sword":
+            elif self.weapon_equipped.name == "sword":
                 return self.sword_walk_left if self.cursor_side == "left" else self.sword_walk_right
-            elif self.weapon_equipped.name == "Boomerang":
+            elif self.weapon_equipped.name == "boomerang":
                 return self.boomerang_move_left if self.cursor_side == "left" else self.boomerang_move_right
 
 
@@ -530,13 +253,13 @@ class Player(BaseEntity):
         # Play hit animation when taking damage (takes priority over other animations)
         elif self.is_hit:
             # Select hit frames based on equipped weapon and cursor side
-            if self.weapon_equipped and self.weapon_equipped.name == "Blaster":
+            if self.weapon_equipped and self.weapon_equipped.name == "blaster":
                 hit_frames = self.blaster_hit_left if self.cursor_side == "left" else self.blaster_hit_right
-            elif self.weapon_equipped and self.weapon_equipped.name == "Shotgun":
+            elif self.weapon_equipped and self.weapon_equipped.name == "shotgun":
                 hit_frames = self.shotgun_hit_left if self.cursor_side == "left" else self.shotgun_hit_right
-            elif self.weapon_equipped and self.weapon_equipped.name == "Boomerang" and not self.weapon_in_hand:
+            elif self.weapon_equipped and self.weapon_equipped.name == "boomerang" and not self.weapon_in_hand:
                 hit_frames = self.blank_hit_left if self.cursor_side == "left" else self.blank_hit_right
-            elif self.weapon_equipped and self.weapon_equipped.name == "Boomerang":
+            elif self.weapon_equipped and self.weapon_equipped.name == "boomerang":
                 hit_frames = self.boomerang_hit_left if self.cursor_side == "left" else self.boomerang_hit_right
             else:
                 hit_frames = self.sword_hit_left if self.cursor_side == "left" else self.sword_hit_right
@@ -554,7 +277,7 @@ class Player(BaseEntity):
                     self.is_hit = False
                     self.hit_frame_index = 0
         # Handle gun shoot animation
-        elif self.is_attacking and self.weapon_equipped and self.weapon_equipped.name == "Blaster":
+        elif self.is_attacking and self.weapon_equipped and self.weapon_equipped.name == "blaster":
             shoot_frames = self.blaster_shoot_left if self.cursor_side == "left" else self.blaster_shoot
             self.frame_counter += 1
             if self.frame_counter >= self.attack_frame_speed:
@@ -566,7 +289,7 @@ class Player(BaseEntity):
                     self.is_attacking = False
                     self.weapon_equipped.is_shooting = False
                     self.attack_frame_index = 0
-        elif self.is_attacking and self.weapon_equipped and self.weapon_equipped.name == "Shotgun":
+        elif self.is_attacking and self.weapon_equipped and self.weapon_equipped.name == "shotgun":
             shoot_frames = self.shotgun_shoot_left if self.cursor_side == "left" else self.shotgun_shoot_right
             self.frame_counter += 1
             if self.frame_counter >= self.attack_frame_speed:
@@ -579,7 +302,7 @@ class Player(BaseEntity):
                     self.weapon_equipped.is_shooting = False
                     self.attack_frame_index = 0
         # Handle melee attack animation
-        elif self.is_attacking and self.weapon_equipped and self.weapon_equipped.name == "Sword":
+        elif self.is_attacking and self.weapon_equipped and self.weapon_equipped.name == "sword":
             # Show attack animation
             if self.cursor_side == "left":
                 attack_frames = self.sword_attack_left
@@ -596,7 +319,7 @@ class Player(BaseEntity):
                 else:
                     # Animation finished, end attack state and sync weapon
                     self.is_attacking = False
-                    if self.weapon_equipped and self.weapon_equipped.name == "Sword":
+                    if self.weapon_equipped and self.weapon_equipped.name == "sword":
                         self.weapon_equipped.is_attacking = False
                     self.attack_frame_index = 0
         else:

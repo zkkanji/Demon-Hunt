@@ -6,7 +6,7 @@ from src.utils.assets import load_image, scale_surface
 class Blaster(GunBase):
     
     def __init__(self):
-        super().__init__(name = "Blaster", damage = 10, is_automatic = False, ammo_limit=15, reload_time=800, attack_cooldown=225, crit_mult=1.5)
+        super().__init__(name = "blaster", damage = 10, is_automatic = False, ammo_limit=15, reload_time=800, attack_cooldown=225, crit_mult=1.5)
         self.projectile_velocity = 10
         projectile_scale = 1.5
         self.projectiles = pygame.sprite.Group()  # Group to manage active projectiles

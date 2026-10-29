@@ -17,6 +17,7 @@ from src.utils.UImanager import UImanager
 from src.utils.upgrade_cards import player_upgrade_card, weapon_upgrade_card, weapon_unlock_card, power_up_card, weapon_inventory_upgrade_card
 from src.utils.power_ups import Invincibility, SpeedBoost, Bomb_PowerUp
 from src.utils.card_selection import initialize_upgrade_selection, update_and_draw_upgrade_cards, handle_card_click, update_upgrade_card_weapons
+from src.utils.stash_layout import StashLayout
 from src.utils.rock_placement import RockLandscaping
 from src.menu_stuff.menu_buttons import MenuButton
 from src.menu_stuff.menu_text import MenuText
@@ -37,6 +38,7 @@ UPGRADE_SELECTION = "upgrade_selection"
 DEATH_SCREEN = "death"
 CREDITS_SCREEN = "credits"
 CONTROLS_SCREEN = "controls"
+STASH_SCREEN = "stash"
 
 current_state = PLAYING if "--start-game" in sys.argv else TITLE_SCREEN
 
@@ -51,6 +53,7 @@ pause_quit_button = MenuButton("quit", MIN_WIDTH // 2 - 100, 270, "quit")
 credits_button = MenuButton("credits", MIN_WIDTH // 2 - 100, 350, "credits") # Opening Menu Credits Button
 controls_button = MenuButton("controls", MIN_WIDTH // 2 - 100, 350, "controls") # Opening Menu Controls Button
 back_button = MenuButton("back", MIN_WIDTH - 80, MIN_HEIGHT - 80, "back", scale=2) # Back Button for Credits and Controls Screens
+stash_button = MenuButton("stash", 20, 57, "stash") # Stash button for wave intervals
 
 menu_text = MenuText(screen)  # Initialize MenuText with the screen
 
@@ -119,6 +122,7 @@ player.weapon_swap(shotgun)
 player.weapon_swap(boomerang) 
 player.equip_weapon(player.weapons_inventory["gun"])  # Equip the blaster as the current weapon
 ui_manager = UImanager(screen, player)
+stash_layout = StashLayout(player)
 
 # Load reticles for custom cursor
 gun_reticle = load_image("assets/misc/gun-reticle.png")
@@ -231,7 +235,9 @@ while running:
                         running = False
 
                 elif current_state == UPGRADE_SELECTION:
-                    if selected_upgrade_cards:
+                    if stash_button.clicked(mouse_pos) == "stash":
+                        current_state = STASH_SCREEN
+                    elif selected_upgrade_cards:
                         # Handle card clicks during upgrade selection
                         if handle_card_click(selected_upgrade_cards, mouse_pos):
                             game.wave_interval_started = True
@@ -241,6 +247,11 @@ while running:
 
                             # Reset spawned counter for next wave
                             enemies_spawned_this_wave = 0
+
+                elif current_state == STASH_SCREEN:
+                    action = stash_layout.handle_click(mouse_pos)
+                    if action == "back":
+                        current_state = UPGRADE_SELECTION
                     
     if current_state == PLAYING:
         screen.fill(BG_COLOR)  # Clear the screen with a green color
@@ -291,14 +302,14 @@ while running:
             ]
             update_upgrade_card_weapons(melee_upgrade_cards, player.weapons_inventory["melee"])
             # Append appropriate card lists based on current loadout
-            if player.weapons_inventory["gun"].name == "Blaster":
+            if player.weapons_inventory["gun"].name == "blaster":
                 update_upgrade_card_weapons(blaster_magazine_upgrade_cards, player.weapons_inventory["gun"])
                 card_lists.append(blaster_magazine_upgrade_cards)
-            elif player.weapons_inventory["gun"].name == "Shotgun":
+            elif player.weapons_inventory["gun"].name == "shotgun":
                 update_upgrade_card_weapons(shotgun_magazine_upgrade_cards, player.weapons_inventory["gun"])
                 card_lists.append(shotgun_magazine_upgrade_cards)
 
-            if player.weapons_inventory["melee"].name in ("Sword", "Boomerang"):
+            if player.weapons_inventory["melee"].name in ("sword", "boomerang"):
                 update_upgrade_card_weapons(sword_range_upgrade_cards, player.weapons_inventory["melee"])
                 card_lists.append(sword_range_upgrade_cards)
             selected_upgrade_cards = initialize_upgrade_selection(card_lists)
@@ -488,6 +499,12 @@ while running:
         if selected_upgrade_cards:
             mouse_pos = pygame.mouse.get_pos()
             update_and_draw_upgrade_cards(screen, selected_upgrade_cards, mouse_pos)
+        update_menu_buttons([stash_button])
+        draw_menu_buttons(screen, [stash_button])
+
+    elif current_state == STASH_SCREEN:
+        pygame.mouse.set_visible(True)
+        stash_layout.draw(screen)
 
     elif current_state == TITLE_SCREEN:
         pygame.mouse.set_visible(True)
