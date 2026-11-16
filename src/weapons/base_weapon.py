@@ -13,7 +13,7 @@ class BaseWeapon(ABC):
         self.crit_multiplier = crit_mult
         idle_weapon_card = load_image(f"assets/weapons/{self.name}/{self.name}1.png")
         hover_weapon_card = load_image(f"assets/weapons/{self.name}/{self.name}2.png")
-        card_scale = 100
+        card_scale = 170
         self.weapon_cards = (scale_surface(idle_weapon_card, card_scale, card_scale), 
                             scale_surface(hover_weapon_card, card_scale, card_scale)
                             )

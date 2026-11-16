@@ -53,7 +53,7 @@ pause_quit_button = MenuButton("quit", MIN_WIDTH // 2 - 100, 270, "quit")
 credits_button = MenuButton("credits", MIN_WIDTH // 2 - 100, 350, "credits") # Opening Menu Credits Button
 controls_button = MenuButton("controls", MIN_WIDTH // 2 - 100, 350, "controls") # Opening Menu Controls Button
 back_button = MenuButton("back", MIN_WIDTH - 80, MIN_HEIGHT - 80, "back", scale=2) # Back Button for Credits and Controls Screens
-stash_button = MenuButton("stash", 20, 57, "stash") # Stash button for wave intervals
+stash_button = MenuButton("stash", 17, 57, "stash") # Stash button for wave intervals
 
 menu_text = MenuText(screen)  # Initialize MenuText with the screen
 

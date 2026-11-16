@@ -10,9 +10,10 @@ class StashLayout:
         self.current_melees = []
         self.equip_buttons = {}
         self.weapon_rects = {}
+        self.hovered_tooltip = None
         self.back_button = MenuButton("back", 0, 0, "back", scale=2)
         self.font_headers = pygame.font.Font(f"assets/fonts/minecraftia/Minecraftia.ttf", 24)
-        self.font_letters = pygame.font.Font(f"assets/fonts/minecraftia/Minecraftia.ttf", 18)
+        self.font_letters = pygame.font.Font(f"assets/fonts/minecraftia/Minecraftia.ttf", 16)
         self.font_numbers = pygame.font.Font(f"assets/fonts/smallest-pixel-7/smallest_pixel-7.ttf", 24)
         self.get_weapons()
 
@@ -26,23 +27,25 @@ class StashLayout:
 
     def _draw_weapon(self, surface, weapon, rect, stats):
         mouse_pos = pygame.mouse.get_pos()
-        hovered = rect.collidepoint(mouse_pos)
+        idle_image = weapon.weapon_cards[0]
+        card_rect = idle_image.get_rect(center=rect.center)
+        visible_rect = idle_image.get_bounding_rect().move(card_rect.topleft)
+        hovered = visible_rect.collidepoint(mouse_pos)
         image = weapon.weapon_cards[1 if hovered else 0]
-        card_rect = image.get_rect(center=rect.center)
-        self.weapon_rects[weapon] = card_rect
-        surface.blit(image, card_rect)
+        image_rect = image.get_rect(center=rect.center)
+        self.weapon_rects[weapon] = visible_rect
+        surface.blit(image, image_rect)
 
         button = self.equip_buttons.get(weapon)
         if button is not None:
-            button_x = card_rect.right + 12
-            if button_x + button.rect.width > surface.get_width() - 12:
-                button_x = card_rect.left - button.rect.width - 12
-            button.set_position(button_x, card_rect.centery - button.rect.height // 2)
+            button_x = visible_rect.centerx // 2 + 5
+            button_y = visible_rect.centery + 33
+            button.set_position(button_x, button_y)
             button.update(mouse_pos)
             button.draw(surface)
 
         if hovered:
-            self._draw_stats_tooltip(surface, stats, mouse_pos)
+            self.hovered_tooltip = (stats, mouse_pos)
 
     def _draw_stats_tooltip(self, surface, stats, mouse_pos):
         lines = [
@@ -94,6 +97,7 @@ class StashLayout:
 
         surface.fill(STASH_BG_COLOR)
         self.weapon_rects = {}
+        self.hovered_tooltip = None
         self._draw_centered_text(
             surface,
             "Stash",
@@ -122,7 +126,7 @@ class StashLayout:
         self._draw_weapon_row(
             surface,
             self.current_melees,
-            500,
+            460,
             self.get_melee_stats,
         )
 
@@ -132,12 +136,15 @@ class StashLayout:
         )
         self.back_button.update(pygame.mouse.get_pos())
         self.back_button.draw(surface)
+        if self.hovered_tooltip is not None:
+            stats, mouse_pos = self.hovered_tooltip
+            self._draw_stats_tooltip(surface, stats, mouse_pos)
 
     def _draw_weapon_row(self, surface, weapons, y, stats_getter):
         if not weapons:
             return
         card_width = weapons[0].weapon_cards[0].get_width()
-        gap = max(24, (surface.get_width() - len(weapons) * card_width) // (len(weapons) + 1))
+        gap = min(24, (surface.get_width() - len(weapons) * card_width) // (len(weapons) + 1))
         for index, weapon in enumerate(weapons):
             x = gap + card_width // 2 + index * (card_width + gap)
             rect = weapons[index].weapon_cards[0].get_rect(center=(x, y))
